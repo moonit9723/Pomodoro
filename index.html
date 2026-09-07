@@ -15,59 +15,59 @@
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            padding: 20px;
+            padding: 20px 10px;
             margin: 0;
         }
         
         .container {
             display: flex;
             flex-direction: column;
-            gap: 30px;
-            max-width: 550px;
+            gap: 16px;
+            max-width: 420px;
             width: 100%;
         }
         
         .card {
             background: #0f171e;
-            padding: 40px 30px;
-            border-radius: 20px;
+            padding: 20px;
+            border-radius: 14px;
             border: 1px solid #00f3ff;
-            box-shadow: 0 0 20px rgba(0, 243, 255, 0.15);
+            box-shadow: 0 0 12px rgba(0, 243, 255, 0.12);
             display: flex;
             flex-direction: column;
             align-items: center;
         }
         
-        /* 연한 하늘색 네온 타이머 */
+        /* 타이머 영역 */
         .timer-display {
-            font-size: 6rem;
+            font-size: 4.2rem;
             font-weight: 800;
             color: #00f3ff;
-            text-shadow: 0 0 20px rgba(0, 243, 255, 0.6), 0 0 40px rgba(0, 243, 255, 0.2);
-            margin: 10px 0 30px 0;
+            text-shadow: 0 0 15px rgba(0, 243, 255, 0.5);
+            margin: 5px 0 15px 0;
             font-variant-numeric: tabular-nums;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
         }
         
-        .btn-group { display: flex; gap: 12px; width: 100%; }
+        .btn-group { display: flex; gap: 8px; width: 100%; }
         
         .btn {
             flex: 1;
             background-color: transparent;
             color: #00f3ff;
-            border: 2px solid #00f3ff;
-            padding: 16px;
-            font-size: 1.1rem;
+            border: 1.5px solid #00f3ff;
+            padding: 10px;
+            font-size: 0.95rem;
             font-weight: 700;
-            border-radius: 10px;
+            border-radius: 8px;
             cursor: pointer;
-            box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
+            box-shadow: 0 0 8px rgba(0, 243, 255, 0.15);
             transition: all 0.2s ease;
         }
         .btn:hover {
             background-color: #00f3ff;
             color: #080c10;
-            box-shadow: 0 0 20px rgba(0, 243, 255, 0.6);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.5);
         }
         .btn-reset {
             color: #526270;
@@ -80,29 +80,39 @@
             box-shadow: none;
         }
         
-        /* 메모 영역 */
-        .memo-section { align-items: stretch; padding: 30px; }
+        /* 메모 & 카운트 영역 */
+        .memo-section { align-items: stretch; padding: 18px; }
         
-        .input-box { display: flex; gap: 10px; margin-bottom: 20px; }
+        .count-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-bottom: 12px;
+        }
+        .count-num {
+            color: #00f3ff;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .input-box { display: flex; gap: 8px; margin-bottom: 14px; }
         .input-box input {
             flex: 1;
-            padding: 14px 16px;
+            padding: 10px 12px;
             background-color: #080c10;
             border: 1px solid #1e293b;
             color: #ffffff;
-            border-radius: 8px;
-            font-size: 1.05rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
             outline: none;
-            transition: border-color 0.2s, box-shadow 0.2s;
+            transition: border-color 0.2s;
         }
         .input-box input:focus {
             border-color: #00f3ff;
-            box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
         }
-        .btn-add {
-            flex: 0 0 80px;
-            padding: 14px;
-        }
+        .btn-add { flex: 0 0 65px; padding: 10px; }
 
         .memo-list {
             list-style: none;
@@ -110,17 +120,19 @@
             margin: 0;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 6px;
+            max-height: 140px;
+            overflow-y: auto;
         }
         .memo-item {
             background-color: #080c10;
             border: 1px solid #1e293b;
-            padding: 14px 16px;
-            border-radius: 8px;
+            padding: 8px 12px;
+            border-radius: 6px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 1rem;
+            font-size: 0.88rem;
             color: #e2e8f0;
         }
         .btn-del {
@@ -128,11 +140,66 @@
             border: none;
             color: #475569;
             cursor: pointer;
-            font-size: 1.1rem;
+            font-size: 0.9rem;
             padding: 0 4px;
-            transition: color 0.2s;
         }
         .btn-del:hover { color: #ff3366; }
+
+        /* 캘린더 영역 */
+        .calendar-section { align-items: stretch; padding: 18px; }
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .calendar-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #00f3ff;
+        }
+        .calendar-nav {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 0 6px;
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            text-align: center;
+            font-size: 0.75rem;
+        }
+        .day-name {
+            color: #64748b;
+            padding-bottom: 4px;
+            font-weight: 600;
+        }
+        .day-cell {
+            background-color: #080c10;
+            border: 1px solid #1e293b;
+            border-radius: 4px;
+            padding: 6px 2px;
+            min-height: 38px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .day-cell.empty { border: none; background: none; }
+        .day-cell.today { border-color: #00f3ff; }
+        .badge {
+            font-size: 0.65rem;
+            background-color: #00f3ff;
+            color: #080c10;
+            font-weight: 800;
+            border-radius: 8px;
+            padding: 1px 4px;
+            margin-top: 2px;
+        }
     </style>
 </head>
 <body>
@@ -147,19 +214,48 @@
             </div>
         </div>
 
-        <!-- 메모 -->
+        <!-- 메모 및 일일 카운터 -->
         <div class="card memo-section">
+            <div class="count-header">
+                <span>오늘 적은 횟수</span>
+                <span><span class="count-num" id="todayCount">0</span>회</span>
+            </div>
             <div class="input-box">
                 <input type="text" id="wishInput" onkeypress="if(event.key==='Enter') addWish()">
                 <button class="btn btn-add" onclick="addWish()">적기</button>
             </div>
-
             <ul class="memo-list" id="memoList"></ul>
+        </div>
+
+        <!-- 캘린더 -->
+        <div class="card calendar-section">
+            <div class="calendar-header">
+                <button class="calendar-nav" onclick="changeMonth(-1)">❮</button>
+                <div class="calendar-title" id="calendarMonth"></div>
+                <button class="calendar-nav" onclick="changeMonth(1)">❯</button>
+            </div>
+            <div class="calendar-grid" id="calendarGrid"></div>
         </div>
     </div>
 
     <script>
-        /* 타이머 로직 */
+        /* 데이터 관리 (localStorage) */
+        function getMemoData() {
+            return JSON.parse(localStorage.getItem('pomodoro_memos') || '{}');
+        }
+        function saveMemoData(data) {
+            localStorage.setItem('pomodoro_memos', JSON.stringify(data));
+        }
+
+        function getTodayKey() {
+            const now = new Date();
+            const y = now.getFullYear();
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            const d = String(now.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        /* 1. 타이머 기능 */
         let timerInterval;
         let timeLeft = 25 * 60;
 
@@ -190,22 +286,111 @@
             updateTimerDisplay();
         }
 
-        /* 메모 로직 */
+        /* 2. 메모 및 카운터 기능 */
         function addWish() {
             const input = document.getElementById('wishInput');
             let text = input.value.trim();
             if (!text) return;
 
-            const ul = document.getElementById('memoList');
-            const li = document.createElement('li');
-            li.className = 'memo-item';
-            li.innerHTML = `
-                <span>${text}</span>
-                <button class="btn-del" onclick="this.parentElement.remove()">✕</button>
-            `;
-            ul.prepend(li);
+            const today = getTodayKey();
+            const data = getMemoData();
+
+            if (!data[today]) data[today] = [];
+            data[today].unshift(text);
+
+            saveMemoData(data);
             input.value = '';
+
+            renderTodayMemos();
+            renderCalendar();
         }
+
+        function deleteWish(index) {
+            const today = getTodayKey();
+            const data = getMemoData();
+            if (data[today]) {
+                data[today].splice(index, 1);
+                saveMemoData(data);
+                renderTodayMemos();
+                renderCalendar();
+            }
+        }
+
+        function renderTodayMemos() {
+            const today = getTodayKey();
+            const data = getMemoData();
+            const list = data[today] || [];
+
+            document.getElementById('todayCount').textContent = list.length;
+
+            const ul = document.getElementById('memoList');
+            ul.innerHTML = '';
+            list.forEach((text, i) => {
+                const li = document.createElement('li');
+                li.className = 'memo-item';
+                li.innerHTML = `
+                    <span>${text}</span>
+                    <button class="btn-del" onclick="deleteWish(${i})">✕</button>
+                `;
+                ul.appendChild(li);
+            });
+        }
+
+        /* 3. 캘린더 기능 */
+        let currentDate = new Date();
+
+        function changeMonth(delta) {
+            currentDate.setMonth(currentDate.getMonth() + delta);
+            renderCalendar();
+        }
+
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+
+            document.getElementById('calendarMonth').textContent = `${year}년 ${month + 1}월`;
+
+            const grid = document.getElementById('calendarGrid');
+            grid.innerHTML = '';
+
+            const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+            dayNames.forEach(d => {
+                const div = document.createElement('div');
+                div.className = 'day-name';
+                div.textContent = d;
+                grid.appendChild(div);
+            });
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const lastDate = new Date(year, month + 1, 0).getDate();
+            const data = getMemoData();
+            const todayStr = getTodayKey();
+
+            for (let i = 0; i < firstDay; i++) {
+                const div = document.createElement('div');
+                div.className = 'day-cell empty';
+                grid.appendChild(div);
+            }
+
+            for (let d = 1; d <= lastDate; d++) {
+                const dayStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const count = (data[dayStr] || []).length;
+
+                const div = document.createElement('div');
+                div.className = 'day-cell' + (dayStr === todayStr ? ' today' : '');
+                
+                let html = `<span>${d}</span>`;
+                if (count > 0) {
+                    html += `<span class="badge">${count}</span>`;
+                }
+                div.innerHTML = html;
+                grid.appendChild(div);
+            }
+        }
+
+        // 초기화 실행
+        renderTodayMemos();
+        renderCalendar();
     </script>
 </body>
 </html>
