@@ -22,51 +22,63 @@
         .container {
             display: flex;
             flex-direction: column;
-            gap: 14px;
-            max-width: 400px;
+            gap: 12px;
+            max-width: 380px;
             width: 100%;
         }
         
         .card {
             background: #0f171e;
-            padding: 18px;
+            padding: 16px;
             border-radius: 14px;
             border: 1px solid #00f3ff;
             box-shadow: 0 0 12px rgba(0, 243, 255, 0.12);
             display: flex;
             flex-direction: column;
             align-items: center;
+            position: relative;
         }
         
-        /* 타이머 영역 */
-        .timer-header {
+        /* 헤더 아이콘 영역 */
+        .top-bar {
             width: 100%;
             display: flex;
             justify-content: space-between;
-            font-size: 0.85rem;
-            color: #94a3b8;
+            align-items: center;
+            margin-bottom: 6px;
         }
+        .icon-btn {
+            background: none;
+            border: none;
+            color: #00f3ff;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 4px;
+            transition: transform 0.2s;
+        }
+        .icon-btn:hover { transform: scale(1.15); }
+        .pomo-count-text { font-size: 0.82rem; color: #94a3b8; }
         .count-num { color: #00f3ff; font-weight: 700; }
         
+        /* 타이머 영역 */
         .timer-display {
-            font-size: 3.8rem;
+            font-size: 3.5rem;
             font-weight: 800;
             color: #00f3ff;
             text-shadow: 0 0 15px rgba(0, 243, 255, 0.5);
-            margin: 4px 0 12px 0;
+            margin: 2px 0 10px 0;
             font-variant-numeric: tabular-nums;
             letter-spacing: 1px;
         }
         
         .btn-group { display: flex; gap: 8px; width: 100%; }
-        
         .btn {
             flex: 1;
             background-color: transparent;
             color: #00f3ff;
             border: 1.5px solid #00f3ff;
-            padding: 9px;
-            font-size: 0.9rem;
+            padding: 8px;
+            font-size: 0.88rem;
             font-weight: 700;
             border-radius: 8px;
             cursor: pointer;
@@ -81,22 +93,36 @@
         .btn-reset { color: #526270; border-color: #1e293b; box-shadow: none; }
         .btn-reset:hover { background-color: #1e293b; color: #ffffff; box-shadow: none; }
         
-        /* 메모 영역 */
-        .memo-section { align-items: stretch; padding: 16px; }
+        /* 집중력 도둑 버튼 */
+        .btn-thief {
+            width: 100%;
+            margin-top: 10px;
+            background-color: #14222e;
+            border: 1px dashed #00f3ff;
+            color: #00f3ff;
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .btn-thief:hover { background-color: #1a2d3d; }
 
-        .input-box { display: flex; gap: 8px; margin-bottom: 10px; }
+        /* 메모 영역 */
+        .memo-section { align-items: stretch; padding: 14px; }
+        .input-box { display: flex; gap: 8px; margin-bottom: 8px; }
         .input-box input {
             flex: 1;
-            padding: 9px 12px;
+            padding: 8px 10px;
             background-color: #080c10;
             border: 1px solid #1e293b;
             color: #ffffff;
             border-radius: 6px;
-            font-size: 0.88rem;
+            font-size: 0.85rem;
             outline: none;
         }
         .input-box input:focus { border-color: #00f3ff; }
-        .btn-add { flex: 0 0 60px; padding: 9px; }
+        .btn-add { flex: 0 0 55px; padding: 8px; }
 
         .memo-list {
             list-style: none;
@@ -105,88 +131,102 @@
             display: flex;
             flex-direction: column;
             gap: 6px;
-            max-height: 120px;
+            max-height: 110px;
             overflow-y: auto;
         }
         .memo-item {
             background-color: #080c10;
             border: 1px solid #1e293b;
-            padding: 7px 10px;
+            padding: 6px 10px;
             border-radius: 6px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             color: #e2e8f0;
         }
-        .btn-del { background: none; border: none; color: #475569; cursor: pointer; font-size: 0.85rem; }
+        .btn-del { background: none; border: none; color: #475569; cursor: pointer; font-size: 0.8rem; }
         .btn-del:hover { color: #ff3366; }
 
-        /* 캘린더 영역 */
-        .calendar-section { align-items: stretch; padding: 16px; }
-        .calendar-header {
-            display: flex;
-            justify-content: space-between;
+        /* 모달 (캘린더 & 집중력 도둑) */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(3px);
+            z-index: 100;
+            justify-content: center;
             align-items: center;
-            margin-bottom: 10px;
         }
-        .calendar-title { font-size: 0.9rem; font-weight: 700; color: #00f3ff; }
-        .calendar-nav { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 0.9rem; }
+        .modal-content {
+            background: #0f171e;
+            border: 1px solid #00f3ff;
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
+            border-radius: 14px;
+            padding: 16px;
+            width: 90%;
+            max-width: 360px;
+            position: relative;
+        }
+        .modal-close {
+            position: absolute;
+            top: 10px; right: 12px;
+            background: none; border: none;
+            color: #94a3b8; font-size: 1.1rem; cursor: pointer;
+        }
         
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 4px;
-            text-align: center;
-            font-size: 0.72rem;
-        }
-        .day-name { color: #64748b; padding-bottom: 2px; font-weight: 600; }
+        /* 캘린더 모달 스타일 */
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .calendar-title { font-size: 0.88rem; font-weight: 700; color: #00f3ff; }
+        .calendar-nav { background: none; border: none; color: #94a3b8; cursor: pointer; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; text-align: center; font-size: 0.7rem; }
+        .day-name { color: #64748b; font-weight: 600; padding-bottom: 2px; }
         .day-cell {
-            background-color: #080c10;
-            border: 1px solid #1e293b;
-            border-radius: 5px;
-            padding: 4px 2px;
-            min-height: 42px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
+            background-color: #080c10; border: 1px solid #1e293b; border-radius: 4px;
+            padding: 3px 1px; min-height: 38px; display: flex; flex-direction: column;
+            justify-content: space-between; align-items: center; cursor: pointer;
         }
-        .day-cell:hover { border-color: #00f3ff; }
         .day-cell.empty { border: none; background: none; cursor: default; }
-        .day-cell.selected { background-color: #1a2a3a; border-color: #00f3ff; }
-        .pomo-badge { font-size: 0.65rem; color: #00f3ff; font-weight: 700; }
-        .memo-dot { font-size: 0.6rem; color: #94a3b8; }
+        .day-cell.selected { border-color: #00f3ff; background-color: #1a2a3a; }
+        .pomo-badge { font-size: 0.6rem; color: #00f3ff; font-weight: 700; }
+        .detail-box { margin-top: 8px; padding-top: 8px; border-top: 1px solid #1e293b; font-size: 0.8rem; }
+        .detail-title { color: #00f3ff; font-weight: 700; margin-bottom: 4px; }
+        .detail-list { list-style: square; padding-left: 14px; margin: 0; color: #cbd5e1; }
 
-        /* 선택한 날짜 상세보기 매뉴 */
-        .detail-box {
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px solid #1e293b;
-            font-size: 0.82rem;
+        /* 집중력 도둑 순위 모달 */
+        .thief-title { font-size: 0.95rem; font-weight: 700; color: #00f3ff; margin-bottom: 12px; text-align: center; }
+        .rank-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+        .rank-item {
+            display: flex; justify-content: space-between; align-items: center;
+            background: #080c10; border: 1px solid #1e293b; padding: 8px 12px; border-radius: 6px; font-size: 0.85rem;
         }
-        .detail-title { color: #00f3ff; font-weight: 700; margin-bottom: 6px; }
-        .detail-list { list-style: square; padding-left: 16px; margin: 0; color: #cbd5e1; }
+        .rank-num { font-weight: 800; color: #00f3ff; width: 20px; }
+        .rank-word { flex: 1; margin-left: 8px; }
+        .rank-count { font-weight: 700; color: #94a3b8; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <!-- 타이머 -->
+        <!-- 타이머 카드 -->
         <div class="card">
-            <div class="timer-header">
-                <span>오늘 성공한 뽀모도로</span>
-                <span><span class="count-num" id="todayPomo">0</span>회</span>
+            <div class="top-bar">
+                <button class="icon-btn" onclick="openModal('calendarModal')" title="달력 보기">📅</button>
+                <div class="pomo-count-text">오늘 성공: <span class="count-num" id="todayPomo">0</span>회</div>
             </div>
+            
             <div class="timer-display" id="timer">25:00</div>
+            
             <div class="btn-group">
                 <button class="btn" onclick="startTimer()">시작</button>
                 <button class="btn btn-reset" onclick="resetTimer()">초기화</button>
             </div>
+
+            <button class="btn-thief" onclick="showThiefRank()">내 집중력 도둑은? 🔍</button>
         </div>
 
-        <!-- 메모 -->
+        <!-- 메모 카드 -->
         <div class="card memo-section">
             <div class="input-box">
                 <input type="text" id="wishInput" onkeypress="if(event.key==='Enter') addWish()">
@@ -194,9 +234,12 @@
             </div>
             <ul class="memo-list" id="memoList"></ul>
         </div>
+    </div>
 
-        <!-- 캘린더 -->
-        <div class="card calendar-section">
+    <!-- 1. 캘린더 모달 -->
+    <div class="modal-overlay" id="calendarModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('calendarModal')">✕</button>
             <div class="calendar-header">
                 <button class="calendar-nav" onclick="changeMonth(-1)">❮</button>
                 <div class="calendar-title" id="calendarMonth"></div>
@@ -204,11 +247,19 @@
             </div>
             <div class="calendar-grid" id="calendarGrid"></div>
             
-            <!-- 날짜 클릭 시 기록 조회 -->
             <div class="detail-box" id="detailBox" style="display: none;">
                 <div class="detail-title" id="detailDate"></div>
                 <ul class="detail-list" id="detailList"></ul>
             </div>
+        </div>
+    </div>
+
+    <!-- 2. 집중력 도둑 순위 모달 -->
+    <div class="modal-overlay" id="thiefModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('thiefModal')">✕</button>
+            <div class="thief-title">내 집중력 도둑 순위 🏆</div>
+            <ul class="rank-list" id="rankList"></ul>
         </div>
     </div>
 
@@ -233,7 +284,11 @@
             return data;
         }
 
-        /* 1. 타이머 */
+        /* 1. 모달 제어 */
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+        /* 2. 타이머 기능 */
         let timerInterval;
         let timeLeft = 25 * 60;
 
@@ -253,7 +308,6 @@
                     clearInterval(timerInterval);
                     timerInterval = null;
                     
-                    // 완료 시 뽀모도로 카운트 증가
                     const today = getTodayKey();
                     let data = getData();
                     data = initDayData(data, today);
@@ -273,7 +327,7 @@
             updateTimerDisplay();
         }
 
-        /* 2. 메모 */
+        /* 3. 메모 기능 */
         function addWish() {
             const input = document.getElementById('wishInput');
             let text = input.value.trim();
@@ -319,7 +373,47 @@
             });
         }
 
-        /* 3. 캘린더 & 날짜 클릭 */
+        /* 4. 내 집중력 도둑 순위 집계 */
+        const TARGET_WORDS = ['야구', '노래', '유튜브', '게임'];
+
+        function showThiefRank() {
+            const data = getData();
+            const counts = { '야구': 0, '노래': 0, '유튜브': 0, '게임': 0 };
+
+            // 지금까지 누적된 모든 날짜의 메모 탐색
+            Object.values(data).forEach(day => {
+                if (day.memos && Array.isArray(day.memos)) {
+                    day.memos.forEach(memo => {
+                        TARGET_WORDS.forEach(word => {
+                            if (memo.includes(word)) {
+                                counts[word]++;
+                            }
+                        });
+                    });
+                }
+            });
+
+            // 빈도수 정렬
+            const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+
+            const rankList = document.getElementById('rankList');
+            rankList.innerHTML = '';
+
+            sorted.forEach(([word, count], idx) => {
+                const li = document.createElement('li');
+                li.className = 'rank-item';
+                li.innerHTML = `
+                    <span class="rank-num">${idx + 1}</span>
+                    <span class="rank-word">${word}</span>
+                    <span class="rank-count">${count}회</span>
+                `;
+                rankList.appendChild(li);
+            });
+
+            openModal('thiefModal');
+        }
+
+        /* 5. 캘린더 기능 */
         let currentDate = new Date();
         let selectedDateKey = getTodayKey();
 
@@ -342,11 +436,11 @@
             const detailList = document.getElementById('detailList');
 
             detailBox.style.display = 'block';
-            detailTitle.textContent = `${dateStr} 기록 (뽀모도로 ${dayData.pomo}회)`;
+            detailTitle.textContent = `${dateStr} (뽀모도로 ${dayData.pomo}회)`;
             detailList.innerHTML = '';
 
             if (dayData.memos.length === 0) {
-                detailList.innerHTML = '<li>작성한 메모가 없습니다.</li>';
+                detailList.innerHTML = '<li>메모가 없습니다.</li>';
             } else {
                 dayData.memos.forEach(m => {
                     const li = document.createElement('li');
@@ -393,10 +487,7 @@
                 
                 let html = `<span>${d}</span>`;
                 if (dayData.pomo > 0) {
-                    html += `<span class="pomo-badge">🍅 ${dayData.pomo}</span>`;
-                }
-                if (dayData.memos.length > 0) {
-                    html += `<span class="memo-dot">📝 ${dayData.memos.length}</span>`;
+                    html += `<span class="pomo-badge">🍅${dayData.pomo}</span>`;
                 }
                 div.innerHTML = html;
                 grid.appendChild(div);
@@ -406,7 +497,9 @@
         function updateViews() {
             renderTodayMemos();
             renderCalendar();
-            renderDetail(selectedDateKey);
+            if (document.getElementById('calendarModal').style.display === 'flex') {
+                renderDetail(selectedDateKey);
+            }
         }
 
         // 초기 실행
