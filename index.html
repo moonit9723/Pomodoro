@@ -8,76 +8,101 @@
         * { box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: #121212;
-            color: #e0e0e0;
+            background-color: #080808;
+            color: #ffffff;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 40px 20px;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
             margin: 0;
         }
         
         .container {
             display: flex;
             flex-direction: column;
-            gap: 20px;
-            max-width: 400px;
+            gap: 30px;
+            max-width: 550px;
             width: 100%;
         }
         
         .card {
-            background: #1e1e1e;
-            padding: 28px;
-            border-radius: 12px;
-            border: 1px solid #2d2d2d;
+            background: #111111;
+            padding: 40px 30px;
+            border-radius: 20px;
+            border: 1px solid #00ff66;
+            box-shadow: 0 0 20px rgba(0, 255, 102, 0.15);
             display: flex;
             flex-direction: column;
             align-items: center;
         }
         
-        /* 타이머 영역 */
+        /* 네온 타이머 영역 */
         .timer-display {
-            font-size: 3.8rem;
-            font-weight: 700;
-            color: #ffffff;
-            margin: 10px 0 20px 0;
+            font-size: 6rem;
+            font-weight: 800;
+            color: #00ff66;
+            text-shadow: 0 0 20px rgba(0, 255, 102, 0.6), 0 0 40px rgba(0, 255, 102, 0.2);
+            margin: 10px 0 30px 0;
             font-variant-numeric: tabular-nums;
+            letter-spacing: 2px;
         }
         
-        .btn-group { display: flex; gap: 8px; width: 100%; }
+        .btn-group { display: flex; gap: 12px; width: 100%; }
         
         .btn {
             flex: 1;
-            background-color: #373737;
-            color: #ffffff;
-            border: none;
-            padding: 12px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            border-radius: 6px;
+            background-color: transparent;
+            color: #00ff66;
+            border: 2px solid #00ff66;
+            padding: 16px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border-radius: 10px;
             cursor: pointer;
-            transition: background-color 0.2s;
+            box-shadow: 0 0 10px rgba(0, 255, 102, 0.2);
+            transition: all 0.2s ease;
         }
-        .btn:hover { background-color: #4a4a4a; }
-        .btn-reset { background-color: #2a2a2a; color: #888888; }
-        .btn-reset:hover { background-color: #333333; color: #aaaaaa; }
+        .btn:hover {
+            background-color: #00ff66;
+            color: #000000;
+            box-shadow: 0 0 20px rgba(0, 255, 102, 0.6);
+        }
+        .btn-reset {
+            color: #666666;
+            border-color: #333333;
+            box-shadow: none;
+        }
+        .btn-reset:hover {
+            background-color: #333333;
+            color: #ffffff;
+            box-shadow: none;
+        }
         
-        /* 메모 영역 */
-        .memo-section { align-items: stretch; }
+        /* 네온 메모 영역 */
+        .memo-section { align-items: stretch; padding: 30px; }
         
-        .input-box { display: flex; gap: 8px; margin-bottom: 16px; }
+        .input-box { display: flex; gap: 10px; margin-bottom: 20px; }
         .input-box input {
             flex: 1;
-            padding: 10px 12px;
-            background-color: #121212;
-            border: 1px solid #333333;
+            padding: 14px 16px;
+            background-color: #080808;
+            border: 1px solid #222222;
             color: #ffffff;
-            border-radius: 6px;
-            font-size: 0.95rem;
+            border-radius: 8px;
+            font-size: 1.05rem;
             outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
-        .input-box input:focus { border-color: #555555; }
-        .btn-add { flex: 0 0 60px; background-color: #373737; }
+        .input-box input:focus {
+            border-color: #00ff66;
+            box-shadow: 0 0 10px rgba(0, 255, 102, 0.3);
+        }
+        .btn-add {
+            flex: 0 0 80px;
+            padding: 14px;
+        }
 
         .memo-list {
             list-style: none;
@@ -85,28 +110,29 @@
             margin: 0;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 10px;
         }
         .memo-item {
-            background-color: #121212;
-            border: 1px solid #2d2d2d;
-            padding: 10px 12px;
-            border-radius: 6px;
+            background-color: #080808;
+            border: 1px solid #222222;
+            padding: 14px 16px;
+            border-radius: 8px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 0.95rem;
-            color: #cccccc;
+            font-size: 1rem;
+            color: #dddddd;
         }
         .btn-del {
             background: none;
             border: none;
-            color: #555555;
+            color: #444444;
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 1.1rem;
             padding: 0 4px;
+            transition: color 0.2s;
         }
-        .btn-del:hover { color: #ffffff; }
+        .btn-del:hover { color: #ff3366; }
     </style>
 </head>
 <body>
@@ -164,15 +190,11 @@
             updateTimerDisplay();
         }
 
-        /* 메모 로직 */
+        /* 메모 로직 (입력한 텍스트 그대로 추가) */
         function addWish() {
             const input = document.getElementById('wishInput');
             let text = input.value.trim();
             if (!text) return;
-
-            if (!text.endsWith('하고 싶다') && !text.endsWith('하고싶다')) {
-                text += ' 하고 싶다';
-            }
 
             const ul = document.getElementById('memoList');
             const li = document.createElement('li');
