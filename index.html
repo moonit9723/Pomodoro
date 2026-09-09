@@ -26,6 +26,18 @@
             max-width: 400px;
             width: 100%;
         }
+
+        /* 화면 전환용 페이지 제어 */
+        .page {
+            display: none;
+            width: 100%;
+            max-width: 420px;
+            flex-direction: column;
+            align-items: center;
+        }
+        .page.active {
+            display: flex;
+        }
         
         .card {
             background: #0f171e;
@@ -37,6 +49,7 @@
             flex-direction: column;
             align-items: center;
             position: relative;
+            width: 100%;
         }
         
         /* 헤더 아이콘 영역 */
@@ -122,7 +135,7 @@
         .btn-thief:hover { background-color: #1a2d3d; }
 
         /* 메모 영역 */
-        .memo-section { align-items: stretch; padding: 14px; }
+        .memo-section { align-items: stretch; padding: 14px; margin-top: 12px; }
         .input-box { display: flex; gap: 8px; margin-bottom: 8px; }
         .input-box input {
             flex: 1;
@@ -218,79 +231,150 @@
         .rank-word { flex: 1; margin-left: 8px; }
         .rank-count { font-weight: 700; color: #94a3b8; }
 
-        /* 수행평가 모달 스타일 */
-        .eval-title { font-size: 0.95rem; font-weight: 700; color: #00f3ff; margin-bottom: 12px; text-align: center; }
+        /* 수행평가 화면(페이지) 전체 스타일 */
+        .eval-header {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .btn-back {
+            background: none;
+            border: 1px solid #00f3ff;
+            color: #00f3ff;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .btn-back:hover {
+            background: #00f3ff;
+            color: #080c10;
+        }
+        .eval-page-title {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: #00f3ff;
+        }
         .eval-subject-card {
             background: #080c10;
             border: 1px solid #1e293b;
-            border-radius: 8px;
-            padding: 10px;
+            border-radius: 10px;
+            padding: 12px;
             margin-bottom: 10px;
+            width: 100%;
         }
         .eval-subject-title {
-            font-size: 0.88rem;
+            font-size: 0.92rem;
             font-weight: 700;
             color: #00f3ff;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             border-bottom: 1px solid #1e293b;
             padding-bottom: 4px;
         }
         .eval-item-list {
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 8px;
         }
-        .eval-item {
+        .eval-item-row {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            background: #0f171e;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #14222e;
+        }
+        .eval-item-top {
             display: flex;
             align-items: center;
             gap: 6px;
-            font-size: 0.8rem;
+            font-size: 0.83rem;
             color: #cbd5e1;
         }
-        .eval-item input[type="checkbox"] {
+        .eval-item-top input[type="checkbox"] {
             accent-color: #00f3ff;
             cursor: pointer;
+        }
+        .eval-item-inputs {
+            display: flex;
+            gap: 6px;
+            margin-left: 22px;
+        }
+        .eval-date-input, .eval-period-select {
+            background-color: #080c10;
+            border: 1px solid #1e293b;
+            color: #00f3ff;
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-size: 0.75rem;
+            outline: none;
+        }
+        .eval-date-input:focus, .eval-period-select:focus {
+            border-color: #00f3ff;
+        }
+        .eval-empty-msg {
+            font-size: 0.78rem;
+            color: #64748b;
+            font-style: italic;
+            padding: 4px 0;
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <!-- 타이머 카드 -->
-        <div class="card">
-            <div class="top-bar">
-                <button class="icon-btn" onclick="openModal('calendarModal')" title="달력 보기">📅</button>
-                <div class="pomo-count-text">오늘 성공: <span class="count-num" id="todayPomo">0</span>회</div>
-                <button class="icon-btn" onclick="openModal('evalModal')" title="수행평가 체크">📝</button>
-            </div>
-            
-            <!-- 공부 과목 선택 -->
-            <select id="pomoSubject" class="subject-select">
-                <option value="독서와 작문">독서와 작문</option>
-                <option value="영어II">영어II</option>
-                <option value="미적분I">미적분I</option>
-                <option value="확률과 통계">확률과 통계</option>
-                <option value="생명과학">생명과학</option>
-                <option value="기타">기타</option>
-            </select>
+    <!-- [페이지 1] 타이머 메인 화면 -->
+    <div id="app-timer" class="page active">
+        <div class="container">
+            <div class="card">
+                <div class="top-bar">
+                    <button class="icon-btn" onclick="openModal('calendarModal')" title="달력 보기">📅</button>
+                    <div class="pomo-count-text">오늘 성공: <span class="count-num" id="todayPomo">0</span>회</div>
+                    <button class="icon-btn" onclick="switchPage('app-eval')" title="수행평가 화면으로 이동">📝</button>
+                </div>
+                
+                <!-- 공부 과목 선택 -->
+                <select id="pomoSubject" class="subject-select">
+                    <option value="독서와 작문">독서와 작문</option>
+                    <option value="영어II">영어II</option>
+                    <option value="미적분I">미적분I</option>
+                    <option value="확률과 통계">확률과 통계</option>
+                    <option value="생명과학">생명과학</option>
+                    <option value="기타">기타</option>
+                </select>
 
-            <div class="timer-display" id="timer">25:00</div>
-            
-            <div class="btn-group">
-                <button class="btn" onclick="startTimer()">시작</button>
-                <button class="btn btn-reset" onclick="resetTimer()">초기화</button>
+                <div class="timer-display" id="timer">25:00</div>
+                
+                <div class="btn-group">
+                    <button class="btn" onclick="startTimer()">시작</button>
+                    <button class="btn btn-reset" onclick="resetTimer()">초기화</button>
+                </div>
+
+                <button class="btn-thief" onclick="showThiefRank()">내 집중력 도둑은? 🔍</button>
             </div>
 
-            <button class="btn-thief" onclick="showThiefRank()">내 집중력 도둑은? 🔍</button>
+            <!-- 메모 카드 -->
+            <div class="card memo-section">
+                <div class="input-box">
+                    <input type="text" id="wishInput" placeholder="딴생각 적기..." onkeypress="if(event.key==='Enter') addWish()">
+                    <button class="btn btn-add" onclick="addWish()">적기</button>
+                </div>
+                <ul class="memo-list" id="memoList"></ul>
+            </div>
         </div>
+    </div>
 
-        <!-- 메모 카드 -->
-        <div class="card memo-section">
-            <div class="input-box">
-                <input type="text" id="wishInput" placeholder="딴생각 적기..." onkeypress="if(event.key==='Enter') addWish()">
-                <button class="btn btn-add" onclick="addWish()">적기</button>
+    <!-- [페이지 2] 수행평가 및 시험 전체 화면 -->
+    <div id="app-eval" class="page">
+        <div class="card">
+            <div class="eval-header">
+                <button class="btn-back" onclick="switchPage('app-timer')">← 타이머로 돌아가기</button>
+                <div class="eval-page-title">수행평가 체크리스트 📝</div>
             </div>
-            <ul class="memo-list" id="memoList"></ul>
+            <div id="evalContainer" style="width: 100%;"></div>
         </div>
     </div>
 
@@ -321,26 +405,22 @@
         </div>
     </div>
 
-    <!-- 3. 수행평가 관리 모달 -->
-    <div class="modal-overlay" id="evalModal">
-        <div class="modal-content">
-            <button class="modal-close" onclick="closeModal('evalModal')">✕</button>
-            <div class="eval-title">수행평가 & 시험 체크리스트 📝</div>
-            <div id="evalContainer"></div>
-        </div>
-    </div>
-
     <script>
-        /* 기본 수행평가 과목별 데이터 목록 */
-        const defaultEvaluations = {
-            "독서와 작문": ["독서 일지 작성", "비평문 제출"],
-            "영어II": ["영단어 어휘 테스트", "영어 에세이 발표"],
-            "미적분I": ["수학 탐구 보고서", "단원별 형성평가"],
-            "확률과 통계": ["통계 프로젝트 발표"],
-            "생명과학": ["실험 보고서 작성"]
-        };
+        /* 수정 및 지정된 과목별 수행평가 구성 */
+        const EVAL_SUBJECTS = [
+            { name: "독서와 작문", items: ["도장", "독후감", "테스트"] },
+            { name: "영어II", items: ["영어듣기", "노트", "원더"] },
+            { name: "미적분I", items: ["9모 테스트", "10모 테스트", "노트"] },
+            { name: "확률과 통계", items: ["부교재/교재", "9월 테스트", "10월 테스트"] },
+            { name: "생명과학", items: ["수행1", "수행2", "수행3", "중간고사", "기말고사"] },
+            { name: "역학과 에너지", items: ["배구", "배드민턴", "피구"] },
+            { name: "음악", items: ["배구", "배드민턴", "피구"] },
+            { name: "미술", items: ["배구", "배드민턴", "피구"] },
+            { name: "체육", items: ["배구", "배드민턴", "피구"] },
+            { name: "진로와직업", items: [] } // 요청 사항: 수행 모두 지우기
+        ];
 
-        /* 데이터 저장 및 불러오기 함수 (localStorage) */
+        /* 데이터 제어 */
         function getData() {
             return JSON.parse(localStorage.getItem('pomodoro_app_data') || '{}');
         }
@@ -349,19 +429,10 @@
         }
 
         function getEvalData() {
-            const saved = localStorage.getItem('pomodoro_eval_data');
-            if (saved) return JSON.parse(saved);
-            
-            // 초기 데이터 세팅
-            const initial = {};
-            for (let sub in defaultEvaluations) {
-                initial[sub] = defaultEvaluations[sub].map(title => ({ title, done: false }));
-            }
-            saveEvalData(initial);
-            return initial;
+            return JSON.parse(localStorage.getItem('pomodoro_eval_v2_data') || '{}');
         }
         function saveEvalData(data) {
-            localStorage.setItem('pomodoro_eval_data', JSON.stringify(data));
+            localStorage.setItem('pomodoro_eval_v2_data', JSON.stringify(data));
         }
 
         function getTodayKey() {
@@ -371,23 +442,29 @@
 
         function initDayData(data, dateKey) {
             if (!data[dateKey]) {
-                data[dateKey] = { pomo: 0, memos: [], subjects: {} };
-            }
-            if (!data[dateKey].subjects) {
-                data[dateKey].subjects = {};
+                data[dateKey] = { pomo: 0, memos: [] };
             }
             return data;
         }
 
-        /* 1. 모달 제어 */
+        /* 페이지 전환 함수 */
+        function switchPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+
+            if (pageId === 'app-eval') {
+                renderEvaluations();
+            }
+        }
+
+        /* 모달 제어 */
         function openModal(id) { 
             document.getElementById(id).style.display = 'flex';
             if (id === 'calendarModal') renderCalendar();
-            if (id === 'evalModal') renderEvaluations();
         }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
-        /* 2. 타이머 기능 */
+        /* 타이머 기능 */
         let timerInterval;
         let timeLeft = 25 * 60;
 
@@ -410,15 +487,12 @@
                     const today = getTodayKey();
                     let data = getData();
                     data = initDayData(data, today);
-                    
-                    const selectedSubject = document.getElementById('pomoSubject').value;
                     data[today].pomo += 1;
-                    data[today].subjects[selectedSubject] = (data[today].subjects[selectedSubject] || 0) + 1;
-                    
                     saveData(data);
-                    resetTimer();
+
+                    const selectedSubject = document.getElementById('pomoSubject').value;
                     updateViews();
-                    alert(`[${selectedSubject}] 25분 뽀모도로 완료! 수고하셨습니다 🎉`);
+                    alert(`[${selectedSubject}] 25분 뽀모도로 완료!`);
                 }
             }, 1000);
         }
@@ -430,7 +504,7 @@
             updateTimerDisplay();
         }
 
-        /* 3. 메모 기능 */
+        /* 메모 기능 */
         function addWish() {
             const input = document.getElementById('wishInput');
             let text = input.value.trim();
@@ -456,83 +530,115 @@
             }
         }
 
-        /* 화면 갱신 (오늘 포모 수 & 메모 리스트) */
-        function updateViews() {
+        function renderTodayMemos() {
             const today = getTodayKey();
             const data = getData();
             const todayData = data[today] || { pomo: 0, memos: [] };
 
             document.getElementById('todayPomo').textContent = todayData.pomo;
 
-            const memoList = document.getElementById('memoList');
-            memoList.innerHTML = '';
-            todayData.memos.forEach((memo, i) => {
+            const ul = document.getElementById('memoList');
+            ul.innerHTML = '';
+            todayData.memos.forEach((text, i) => {
                 const li = document.createElement('li');
                 li.className = 'memo-item';
-                li.innerHTML = `<span>${memo}</span> <button class="btn-del" onclick="deleteWish(${i})">✕</button>`;
-                memoList.appendChild(li);
+                li.innerHTML = `
+                    <span>${text}</span>
+                    <button class="btn-del" onclick="deleteWish(${i})">✕</button>
+                `;
+                ul.appendChild(li);
             });
         }
 
-        /* 4. 집중력 도둑 순위 분석 */
+        /* 집중력 도둑 순위 */
+        const TARGET_WORDS = ['야구', '노래', '유튜브', '게임'];
+
         function showThiefRank() {
             const data = getData();
-            const counts = {};
+            const counts = { '야구': 0, '노래': 0, '유튜브': 0, '게임': 0 };
 
-            for (let date in data) {
-                if (data[date].memos) {
-                    data[date].memos.forEach(memo => {
-                        const word = memo.trim();
-                        if (word) counts[word] = (counts[word] || 0) + 1;
+            Object.values(data).forEach(day => {
+                if (day.memos && Array.isArray(day.memos)) {
+                    day.memos.forEach(memo => {
+                        TARGET_WORDS.forEach(word => {
+                            if (memo.includes(word)) {
+                                counts[word]++;
+                            }
+                        });
                     });
                 }
-            }
+            });
 
-            const sorted = Object.keys(counts).map(word => ({ word, count: counts[word] }))
-                                            .sort((a, b) => b.count - a.count);
+            const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
 
             const rankList = document.getElementById('rankList');
             rankList.innerHTML = '';
 
-            if (sorted.length === 0) {
-                rankList.innerHTML = '<li class="rank-item" style="justify-content:center; color:#64748b;">기록된 딴생각이 없습니다!</li>';
-            } else {
-                sorted.slice(0, 5).forEach((item, idx) => {
-                    const li = document.createElement('li');
-                    li.className = 'rank-item';
-                    li.innerHTML = `
-                        <span class="rank-num">${idx + 1}</span>
-                        <span class="rank-word">${item.word}</span>
-                        <span class="rank-count">${item.count}회</span>
-                    `;
-                    rankList.appendChild(li);
-                });
-            }
+            sorted.forEach(([word, count], idx) => {
+                const li = document.createElement('li');
+                li.className = 'rank-item';
+                li.innerHTML = `
+                    <span class="rank-num">${idx + 1}</span>
+                    <span class="rank-word">${word}</span>
+                    <span class="rank-count">${count}회</span>
+                `;
+                rankList.appendChild(li);
+            });
 
             openModal('thiefModal');
         }
 
-        /* 5. 캘린더 기능 */
-        let currentCalDate = new Date();
+        /* 캘린더 기능 */
+        let currentDate = new Date();
+        let selectedDateKey = getTodayKey();
 
         function changeMonth(delta) {
-            currentCalDate.setMonth(currentCalDate.getMonth() + delta);
+            currentDate.setMonth(currentDate.getMonth() + delta);
             renderCalendar();
         }
 
+        function selectDate(dateStr) {
+            selectedDateKey = dateStr;
+            renderCalendar();
+            renderDetail(dateStr);
+        }
+
+        function renderDetail(dateStr) {
+            const data = getData();
+            const dayData = data[dateStr] || { pomo: 0, memos: [] };
+            const detailBox = document.getElementById('detailBox');
+            const detailTitle = document.getElementById('detailDate');
+            const detailList = document.getElementById('detailList');
+
+            detailBox.style.display = 'block';
+            detailTitle.textContent = `${dateStr} (뽀모도로 ${dayData.pomo}회)`;
+            detailList.innerHTML = '';
+
+            if (dayData.memos.length === 0) {
+                detailList.innerHTML = '<li>메모가 없습니다.</li>';
+            } else {
+                dayData.memos.forEach(m => {
+                    const li = document.createElement('li');
+                    li.textContent = m;
+                    detailList.appendChild(li);
+                });
+            }
+        }
+
         function renderCalendar() {
-            const year = currentCalDate.getFullYear();
-            const month = currentCalDate.getMonth();
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+
             document.getElementById('calendarMonth').textContent = `${year}년 ${month + 1}월`;
 
             const grid = document.getElementById('calendarGrid');
             grid.innerHTML = '';
 
             const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
-            dayNames.forEach(name => {
+            dayNames.forEach(d => {
                 const div = document.createElement('div');
                 div.className = 'day-name';
-                div.textContent = name;
+                div.textContent = d;
                 grid.appendChild(div);
             });
 
@@ -541,94 +647,126 @@
             const data = getData();
 
             for (let i = 0; i < firstDay; i++) {
-                const emptyCell = document.createElement('div');
-                emptyCell.className = 'day-cell empty';
-                grid.appendChild(emptyCell);
+                const div = document.createElement('div');
+                div.className = 'day-cell empty';
+                grid.appendChild(div);
             }
 
             for (let d = 1; d <= lastDate; d++) {
-                const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-                const dayData = data[dateKey];
+                const dayStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const dayData = data[dayStr] || { pomo: 0, memos: [] };
 
-                const cell = document.createElement('div');
-                cell.className = 'day-cell';
-                cell.onclick = () => showDateDetails(dateKey);
-
-                let badgeHtml = dayData && dayData.pomo > 0 ? `<span class="pomo-badge">🍅 ${dayData.pomo}</span>` : '';
-                cell.innerHTML = `<span>${d}</span>${badgeHtml}`;
-
-                grid.appendChild(cell);
-            }
-        }
-
-        function showDateDetails(dateKey) {
-            const data = getData();
-            const dayData = data[dateKey];
-            const detailBox = document.getElementById('detailBox');
-            const detailDate = document.getElementById('detailDate');
-            const detailList = document.getElementById('detailList');
-
-            detailBox.style.display = 'block';
-            detailDate.textContent = `📌 ${dateKey} 기록`;
-            detailList.innerHTML = '';
-
-            if (!dayData || (dayData.pomo === 0 && (!dayData.memos || dayData.memos.length === 0))) {
-                detailList.innerHTML = '<li>기록이 없습니다.</li>';
-                return;
-            }
-
-            if (dayData.pomo > 0) {
-                let subDetails = [];
-                if (dayData.subjects) {
-                    for (let s in dayData.subjects) {
-                        subDetails.push(`${s}: ${dayData.subjects[s]}회`);
-                    }
+                const div = document.createElement('div');
+                div.className = 'day-cell' + (dayStr === selectedDateKey ? ' selected' : '');
+                div.onclick = () => selectDate(dayStr);
+                
+                let html = `<span>${d}</span>`;
+                if (dayData.pomo > 0) {
+                    html += `<span class="pomo-badge">🍅${dayData.pomo}</span>`;
                 }
-                const subStr = subDetails.length > 0 ? ` (${subDetails.join(', ')})` : '';
-                detailList.innerHTML += `<li><strong>성공한 뽀모도로:</strong> ${dayData.pomo}회${subStr}</li>`;
-            }
-
-            if (dayData.memos && dayData.memos.length > 0) {
-                detailList.innerHTML += `<li><strong>기록한 딴생각:</strong> ${dayData.memos.join(', ')}</li>`;
+                div.innerHTML = html;
+                grid.appendChild(div);
             }
         }
 
-        /* 6. 수행평가 체크리스트 관리 */
-        function renderEvaluations() {
+        /* 수행평가 데이터 및 화면 렌더링 */
+        function toggleEvalCheck(subjectName, itemName) {
             const evalData = getEvalData();
+            const key = `${subjectName}_${itemName}`;
+            if (!evalData[key]) evalData[key] = {};
+            evalData[key].checked = !evalData[key].checked;
+            saveEvalData(evalData);
+        }
+
+        function updateEvalDetail(subjectName, itemName, field, value) {
+            const evalData = getEvalData();
+            const key = `${subjectName}_${itemName}`;
+            if (!evalData[key]) evalData[key] = {};
+            evalData[key][field] = value;
+            saveEvalData(evalData);
+        }
+
+        function renderEvaluations() {
             const container = document.getElementById('evalContainer');
             container.innerHTML = '';
+            const evalData = getEvalData();
 
-            for (let subject in evalData) {
+            EVAL_SUBJECTS.forEach(sub => {
                 const card = document.createElement('div');
                 card.className = 'eval-subject-card';
 
-                let itemsHtml = evalData[subject].map((item, idx) => `
-                    <label class="eval-item">
-                        <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleEval('${subject}', ${idx})">
-                        <span style="${item.done ? 'text-decoration: line-through; color: #64748b;' : ''}">${item.title}</span>
-                    </label>
-                `).join('');
+                const title = document.createElement('div');
+                title.className = 'eval-subject-title';
+                title.textContent = sub.name;
+                card.appendChild(title);
 
-                card.innerHTML = `
-                    <div class="eval-subject-title">${subject}</div>
-                    <div class="eval-item-list">${itemsHtml}</div>
-                `;
+                const itemList = document.createElement('div');
+                itemList.className = 'eval-item-list';
+
+                if (sub.items.length === 0) {
+                    const emptyMsg = document.createElement('div');
+                    emptyMsg.className = 'eval-empty-msg';
+                    emptyMsg.textContent = '등록된 수행평가 항목이 없습니다.';
+                    itemList.appendChild(emptyMsg);
+                } else {
+                    sub.items.forEach(item => {
+                        const key = `${sub.name}_${item}`;
+                        const itemData = evalData[key] || { checked: false, date: '', period: '1' };
+
+                        const row = document.createElement('div');
+                        row.className = 'eval-item-row';
+
+                        const top = document.createElement('label');
+                        top.className = 'eval-item-top';
+                        top.innerHTML = `
+                            <input type="checkbox" ${itemData.checked ? 'checked' : ''} onchange="toggleEvalCheck('${sub.name}', '${item}')">
+                            <span style="${itemData.checked ? 'text-decoration: line-through; color: #64748b;' : ''}">${item}</span>
+                        `;
+
+                        const inputs = document.createElement('div');
+                        inputs.className = 'eval-item-inputs';
+
+                        const dateInput = document.createElement('input');
+                        dateInput.type = 'date';
+                        dateInput.className = 'eval-date-input';
+                        dateInput.value = itemData.date || '';
+                        dateInput.onchange = (e) => updateEvalDetail(sub.name, item, 'date', e.target.value);
+
+                        const periodSelect = document.createElement('select');
+                        periodSelect.className = 'eval-period-select';
+                        for (let p = 1; p <= 7; p++) {
+                            const opt = document.createElement('option');
+                            opt.value = p;
+                            opt.textContent = `${p}교시`;
+                            if (String(itemData.period) === String(p)) opt.selected = true;
+                            periodSelect.appendChild(opt);
+                        }
+                        periodSelect.onchange = (e) => updateEvalDetail(sub.name, item, 'period', e.target.value);
+
+                        inputs.appendChild(dateInput);
+                        inputs.appendChild(periodSelect);
+
+                        row.appendChild(top);
+                        row.appendChild(inputs);
+                        itemList.appendChild(row);
+                    });
+                }
+
+                card.appendChild(itemList);
                 container.appendChild(card);
+            });
+        }
+
+        function updateViews() {
+            renderTodayMemos();
+            renderCalendar();
+            if (document.getElementById('calendarModal').style.display === 'flex') {
+                renderDetail(selectedDateKey);
             }
         }
 
-        function toggleEval(subject, index) {
-            const evalData = getEvalData();
-            evalData[subject][index].done = !evalData[subject][index].done;
-            saveEvalData(evalData);
-            renderEvaluations();
-        }
-
-        /* 초기 실행 */
-        window.onload = function() {
-            updateViews();
-        };
+        // 초기 실행
+        updateViews();
     </script>
 </body>
 </html>
