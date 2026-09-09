@@ -331,7 +331,16 @@
     </div>
 
     <script>
-        /* 데이터 구조 (localStorage) */
+        /* 기본 수행평가 과목별 데이터 목록 */
+        const defaultEvaluations = {
+            "독서와 작문": ["독서 일지 작성", "비평문 제출"],
+            "영어II": ["영단어 어휘 테스트", "영어 에세이 발표"],
+            "미적분I": ["수학 탐구 보고서", "단원별 형성평가"],
+            "확률과 통계": ["통계 프로젝트 발표"],
+            "생명과학": ["실험 보고서 작성"]
+        };
+
+        /* 데이터 저장 및 불러오기 함수 (localStorage) */
         function getData() {
             return JSON.parse(localStorage.getItem('pomodoro_app_data') || '{}');
         }
@@ -340,7 +349,16 @@
         }
 
         function getEvalData() {
-            return JSON.parse(localStorage.getItem('pomodoro_eval_data') || '{}');
+            const saved = localStorage.getItem('pomodoro_eval_data');
+            if (saved) return JSON.parse(saved);
+            
+            // 초기 데이터 세팅
+            const initial = {};
+            for (let sub in defaultEvaluations) {
+                initial[sub] = defaultEvaluations[sub].map(title => ({ title, done: false }));
+            }
+            saveEvalData(initial);
+            return initial;
         }
         function saveEvalData(data) {
             localStorage.setItem('pomodoro_eval_data', JSON.stringify(data));
@@ -353,7 +371,10 @@
 
         function initDayData(data, dateKey) {
             if (!data[dateKey]) {
-                data[dateKey] = { pomo: 0, memos: [] };
+                data[dateKey] = { pomo: 0, memos: [], subjects: {} };
+            }
+            if (!data[dateKey].subjects) {
+                data[dateKey].subjects = {};
             }
             return data;
         }
@@ -361,6 +382,7 @@
         /* 1. 모달 제어 */
         function openModal(id) { 
             document.getElementById(id).style.display = 'flex';
+            if (id === 'calendarModal') renderCalendar();
             if (id === 'evalModal') renderEvaluations();
         }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
@@ -388,12 +410,15 @@
                     const today = getTodayKey();
                     let data = getData();
                     data = initDayData(data, today);
-                    data[today].pomo += 1;
-                    saveData(data);
-
+                    
                     const selectedSubject = document.getElementById('pomoSubject').value;
+                    data[today].pomo += 1;
+                    data[today].subjects[selectedSubject] = (data[today].subjects[selectedSubject] || 0) + 1;
+                    
+                    saveData(data);
+                    resetTimer();
                     updateViews();
-                    alert(`[${selectedSubject}] 25분 뽀모도로 완료!`);
+                    alert(`[${selectedSubject}] 25분 뽀모도로 완료! 수고하셨습니다 🎉`);
                 }
             }, 1000);
         }
@@ -431,115 +456,83 @@
             }
         }
 
-        function renderTodayMemos() {
+        /* 화면 갱신 (오늘 포모 수 & 메모 리스트) */
+        function updateViews() {
             const today = getTodayKey();
             const data = getData();
             const todayData = data[today] || { pomo: 0, memos: [] };
 
             document.getElementById('todayPomo').textContent = todayData.pomo;
 
-            const ul = document.getElementById('memoList');
-            ul.innerHTML = '';
-            todayData.memos.forEach((text, i) => {
+            const memoList = document.getElementById('memoList');
+            memoList.innerHTML = '';
+            todayData.memos.forEach((memo, i) => {
                 const li = document.createElement('li');
                 li.className = 'memo-item';
-                li.innerHTML = `
-                    <span>${text}</span>
-                    <button class="btn-del" onclick="deleteWish(${i})">✕</button>
-                `;
-                ul.appendChild(li);
+                li.innerHTML = `<span>${memo}</span> <button class="btn-del" onclick="deleteWish(${i})">✕</button>`;
+                memoList.appendChild(li);
             });
         }
 
-        /* 4. 집중력 도둑 순위 */
-        const TARGET_WORDS = ['야구', '노래', '유튜브', '게임'];
-
+        /* 4. 집중력 도둑 순위 분석 */
         function showThiefRank() {
             const data = getData();
-            const counts = { '야구': 0, '노래': 0, '유튜브': 0, '게임': 0 };
+            const counts = {};
 
-            Object.values(data).forEach(day => {
-                if (day.memos && Array.isArray(day.memos)) {
-                    day.memos.forEach(memo => {
-                        TARGET_WORDS.forEach(word => {
-                            if (memo.includes(word)) {
-                                counts[word]++;
-                            }
-                        });
+            for (let date in data) {
+                if (data[date].memos) {
+                    data[date].memos.forEach(memo => {
+                        const word = memo.trim();
+                        if (word) counts[word] = (counts[word] || 0) + 1;
                     });
                 }
-            });
+            }
 
-            const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+            const sorted = Object.keys(counts).map(word => ({ word, count: counts[word] }))
+                                            .sort((a, b) => b.count - a.count);
 
             const rankList = document.getElementById('rankList');
             rankList.innerHTML = '';
 
-            sorted.forEach(([word, count], idx) => {
-                const li = document.createElement('li');
-                li.className = 'rank-item';
-                li.innerHTML = `
-                    <span class="rank-num">${idx + 1}</span>
-                    <span class="rank-word">${word}</span>
-                    <span class="rank-count">${count}회</span>
-                `;
-                rankList.appendChild(li);
-            });
+            if (sorted.length === 0) {
+                rankList.innerHTML = '<li class="rank-item" style="justify-content:center; color:#64748b;">기록된 딴생각이 없습니다!</li>';
+            } else {
+                sorted.slice(0, 5).forEach((item, idx) => {
+                    const li = document.createElement('li');
+                    li.className = 'rank-item';
+                    li.innerHTML = `
+                        <span class="rank-num">${idx + 1}</span>
+                        <span class="rank-word">${item.word}</span>
+                        <span class="rank-count">${item.count}회</span>
+                    `;
+                    rankList.appendChild(li);
+                });
+            }
 
             openModal('thiefModal');
         }
 
         /* 5. 캘린더 기능 */
-        let currentDate = new Date();
-        let selectedDateKey = getTodayKey();
+        let currentCalDate = new Date();
 
         function changeMonth(delta) {
-            currentDate.setMonth(currentDate.getMonth() + delta);
+            currentCalDate.setMonth(currentCalDate.getMonth() + delta);
             renderCalendar();
-        }
-
-        function selectDate(dateStr) {
-            selectedDateKey = dateStr;
-            renderCalendar();
-            renderDetail(dateStr);
-        }
-
-        function renderDetail(dateStr) {
-            const data = getData();
-            const dayData = data[dateStr] || { pomo: 0, memos: [] };
-            const detailBox = document.getElementById('detailBox');
-            const detailTitle = document.getElementById('detailDate');
-            const detailList = document.getElementById('detailList');
-
-            detailBox.style.display = 'block';
-            detailTitle.textContent = `${dateStr} (뽀모도로 ${dayData.pomo}회)`;
-            detailList.innerHTML = '';
-
-            if (dayData.memos.length === 0) {
-                detailList.innerHTML = '<li>메모가 없습니다.</li>';
-            } else {
-                dayData.memos.forEach(m => {
-                    const li = document.createElement('li');
-                    li.textContent = m;
-                    detailList.appendChild(li);
-                });
-            }
         }
 
         function renderCalendar() {
-            const year = currentDate.getFullYear();
-            const month = currentDate.getMonth();
-
+            const year = currentCalDate.getFullYear();
+            const month = currentCalDate.getMonth();
             document.getElementById('calendarMonth').textContent = `${year}년 ${month + 1}월`;
 
             const grid = document.getElementById('calendarGrid');
             grid.innerHTML = '';
 
             const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
-            dayNames.forEach(d => {
+            dayNames.forEach(name => {
                 const div = document.createElement('div');
                 div.className = 'day-name';
-                div.textContent = d;
+                div.textContent = name;
                 grid.appendChild(div);
             });
 
@@ -548,94 +541,94 @@
             const data = getData();
 
             for (let i = 0; i < firstDay; i++) {
-                const div = document.createElement('div');
-                div.className = 'day-cell empty';
-                grid.appendChild(div);
+                const emptyCell = document.createElement('div');
+                emptyCell.className = 'day-cell empty';
+                grid.appendChild(emptyCell);
             }
 
             for (let d = 1; d <= lastDate; d++) {
-                const dayStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-                const dayData = data[dayStr] || { pomo: 0, memos: [] };
+                const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const dayData = data[dateKey];
 
-                const div = document.createElement('div');
-                div.className = 'day-cell' + (dayStr === selectedDateKey ? ' selected' : '');
-                div.onclick = () => selectDate(dayStr);
-                
-                let html = `<span>${d}</span>`;
-                if (dayData.pomo > 0) {
-                    html += `<span class="pomo-badge">🍅${dayData.pomo}</span>`;
-                }
-                div.innerHTML = html;
-                grid.appendChild(div);
+                const cell = document.createElement('div');
+                cell.className = 'day-cell';
+                cell.onclick = () => showDateDetails(dateKey);
+
+                let badgeHtml = dayData && dayData.pomo > 0 ? `<span class="pomo-badge">🍅 ${dayData.pomo}</span>` : '';
+                cell.innerHTML = `<span>${d}</span>${badgeHtml}`;
+
+                grid.appendChild(cell);
             }
         }
 
-        /* 6. 수행평가 / 시험 관리 기능 */
-        const EVAL_SUBJECTS = [
-            { name: "독서와 작문", items: ["수행1", "수행2", "수행3", "중간고사", "기말고사"] },
-            { name: "영어II", items: ["수행1", "수행2", "수행3", "중간고사", "기말고사"] },
-            { name: "미적분I", items: ["수행1", "수행2", "수행3", "중간고사", "기말고사"] },
-            { name: "확률과 통계", items: ["수행1", "수행2", "수행3", "중간고사", "기말고사"] },
-            { name: "생명과학", items: ["수행1", "수행2", "수행3", "중간고사", "기말고사"] },
-            { name: "역학과 에너지", items: ["수행1", "수행2", "수행3"] },
-            { name: "음악", items: ["수행1", "수행2", "수행3"] },
-            { name: "미술", items: ["수행1", "수행2", "수행3"] },
-            { name: "체육", items: ["수행1", "수행2", "수행3"] },
-            { name: "진로와직업", items: ["수행1", "수행2", "수행3"] }
-        ];
+        function showDateDetails(dateKey) {
+            const data = getData();
+            const dayData = data[dateKey];
+            const detailBox = document.getElementById('detailBox');
+            const detailDate = document.getElementById('detailDate');
+            const detailList = document.getElementById('detailList');
 
-        function toggleEvalCheck(subjectName, itemName) {
-            const evalData = getEvalData();
-            const key = `${subjectName}_${itemName}`;
-            evalData[key] = !evalData[key];
-            saveEvalData(evalData);
+            detailBox.style.display = 'block';
+            detailDate.textContent = `📌 ${dateKey} 기록`;
+            detailList.innerHTML = '';
+
+            if (!dayData || (dayData.pomo === 0 && (!dayData.memos || dayData.memos.length === 0))) {
+                detailList.innerHTML = '<li>기록이 없습니다.</li>';
+                return;
+            }
+
+            if (dayData.pomo > 0) {
+                let subDetails = [];
+                if (dayData.subjects) {
+                    for (let s in dayData.subjects) {
+                        subDetails.push(`${s}: ${dayData.subjects[s]}회`);
+                    }
+                }
+                const subStr = subDetails.length > 0 ? ` (${subDetails.join(', ')})` : '';
+                detailList.innerHTML += `<li><strong>성공한 뽀모도로:</strong> ${dayData.pomo}회${subStr}</li>`;
+            }
+
+            if (dayData.memos && dayData.memos.length > 0) {
+                detailList.innerHTML += `<li><strong>기록한 딴생각:</strong> ${dayData.memos.join(', ')}</li>`;
+            }
         }
 
+        /* 6. 수행평가 체크리스트 관리 */
         function renderEvaluations() {
+            const evalData = getEvalData();
             const container = document.getElementById('evalContainer');
             container.innerHTML = '';
-            const evalData = getEvalData();
 
-            EVAL_SUBJECTS.forEach(sub => {
+            for (let subject in evalData) {
                 const card = document.createElement('div');
                 card.className = 'eval-subject-card';
 
-                const title = document.createElement('div');
-                title.className = 'eval-subject-title';
-                title.textContent = sub.name;
-                card.appendChild(title);
+                let itemsHtml = evalData[subject].map((item, idx) => `
+                    <label class="eval-item">
+                        <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleEval('${subject}', ${idx})">
+                        <span style="${item.done ? 'text-decoration: line-through; color: #64748b;' : ''}">${item.title}</span>
+                    </label>
+                `).join('');
 
-                const itemList = document.createElement('div');
-                itemList.className = 'eval-item-list';
-
-                sub.items.forEach(item => {
-                    const key = `${sub.name}_${item}`;
-                    const isChecked = !!evalData[key];
-
-                    const label = document.createElement('label');
-                    label.className = 'eval-item';
-                    label.innerHTML = `
-                        <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleEvalCheck('${sub.name}', '${item}')">
-                        <span>${item}</span>
-                    `;
-                    itemList.appendChild(label);
-                });
-
-                card.appendChild(itemList);
+                card.innerHTML = `
+                    <div class="eval-subject-title">${subject}</div>
+                    <div class="eval-item-list">${itemsHtml}</div>
+                `;
                 container.appendChild(card);
-            });
-        }
-
-        function updateViews() {
-            renderTodayMemos();
-            renderCalendar();
-            if (document.getElementById('calendarModal').style.display === 'flex') {
-                renderDetail(selectedDateKey);
             }
         }
 
-        // 초기 실행
-        updateViews();
+        function toggleEval(subject, index) {
+            const evalData = getEvalData();
+            evalData[subject][index].done = !evalData[subject][index].done;
+            saveEvalData(evalData);
+            renderEvaluations();
+        }
+
+        /* 초기 실행 */
+        window.onload = function() {
+            updateViews();
+        };
     </script>
 </body>
 </html>
