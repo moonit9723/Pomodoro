@@ -368,6 +368,7 @@
                     <button class="icon-btn" onclick="switchPage('app-eval')" title="수행평가 화면으로 이동">📝</button>
                 </div>
                 
+                <!-- 공부 과목 선택 드롭다운 (역학과 에너지, 음미체 삭제 반영) -->
                 <select id="pomoSubject" class="subject-select">
                     <option value="독서와 작문">독서와 작문</option>
                     <option value="영어II">영어II</option>
@@ -450,16 +451,20 @@
     <script>
         const FIXED_YEAR = 2026;
 
-        /* 과목 및 항목 정의 (역학과 에너지, 음미체 삭제 반영) */
+        /* 수행평가 전용 과목 및 항목 전체 복원 */
         const EVAL_SUBJECTS = [
             { name: "독서와 작문", items: ["도장", "독후감", "테스트"] },
             { name: "영어II", items: ["영어듣기", "노트", "원더"] },
             { name: "미적분I", items: ["9모 테스트", "10모 테스트", "수학노트"] },
             { name: "확률과 통계", items: ["부교재/교재", "9월 테스트", "10월 테스트"] },
-            { name: "생명과학", items: ["수행1", "수행2", "수행3", "중간고사", "기말고사"] }
+            { name: "역학과 에너지", items: ["수행1", "수행2", "수행3", "중간고사", "기말고사"] },
+            { name: "생명과학", items: ["수행1", "수행2", "수행3", "중간고사", "기말고사"] },
+            { name: "음악", items: ["수행1", "수행2"] },
+            { name: "미술", items: ["수행1", "수행2"] },
+            { name: "체육", items: ["수행1", "수행2"] }
         ];
 
-        /* 날짜 초기화 버튼이 포함되어야 할 항목 목록 */
+        /* 날짜 초기화 버튼이 활성화되는 특정 항목들 */
         const RESET_DATE_ITEMS = [
             "독서와 작문_독후감",
             "영어II_원더",
@@ -879,7 +884,7 @@
                     inputs.appendChild(slash);
                     inputs.appendChild(maxScoreInput);
 
-                    // 맨 끝에 배치되는 날짜 초기화(✕) 버튼 (지정된 항목만)
+                    // 맨 끝(점수 입력란 오른쪽)에 위치하는 날짜 초기화 버튼 (지정 항목)
                     if (RESET_DATE_ITEMS.includes(key)) {
                         const dateResetBtn = document.createElement('button');
                         dateResetBtn.className = 'date-reset-btn';
