@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>포모도로 타이머</title>
+    <title>포모도로 타이머 & 수행평가 관리</title>
     <style>
         * { box-sizing: border-box; }
         body {
@@ -23,7 +23,7 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
-            max-width: 380px;
+            max-width: 400px;
             width: 100%;
         }
         
@@ -60,6 +60,20 @@
         .pomo-count-text { font-size: 0.82rem; color: #94a3b8; }
         .count-num { color: #00f3ff; font-weight: 700; }
         
+        /* 과목 선택 드롭다운 */
+        .subject-select {
+            width: 100%;
+            padding: 6px 10px;
+            background-color: #080c10;
+            border: 1px solid #00f3ff;
+            color: #00f3ff;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            outline: none;
+        }
+
         /* 타이머 영역 */
         .timer-display {
             font-size: 3.5rem;
@@ -93,7 +107,6 @@
         .btn-reset { color: #526270; border-color: #1e293b; box-shadow: none; }
         .btn-reset:hover { background-color: #1e293b; color: #ffffff; box-shadow: none; }
         
-        /* 집중력 도둑 버튼 */
         .btn-thief {
             width: 100%;
             margin-top: 10px;
@@ -148,7 +161,7 @@
         .btn-del { background: none; border: none; color: #475569; cursor: pointer; font-size: 0.8rem; }
         .btn-del:hover { color: #ff3366; }
 
-        /* 모달 (캘린더 & 집중력 도둑) */
+        /* 모달 */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -166,7 +179,9 @@
             border-radius: 14px;
             padding: 16px;
             width: 90%;
-            max-width: 360px;
+            max-width: 380px;
+            max-height: 85vh;
+            overflow-y: auto;
             position: relative;
         }
         .modal-close {
@@ -176,7 +191,6 @@
             color: #94a3b8; font-size: 1.1rem; cursor: pointer;
         }
         
-        /* 캘린더 모달 스타일 */
         .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .calendar-title { font-size: 0.88rem; font-weight: 700; color: #00f3ff; }
         .calendar-nav { background: none; border: none; color: #94a3b8; cursor: pointer; }
@@ -194,7 +208,6 @@
         .detail-title { color: #00f3ff; font-weight: 700; margin-bottom: 4px; }
         .detail-list { list-style: square; padding-left: 14px; margin: 0; color: #cbd5e1; }
 
-        /* 집중력 도둑 순위 모달 */
         .thief-title { font-size: 0.95rem; font-weight: 700; color: #00f3ff; margin-bottom: 12px; text-align: center; }
         .rank-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
         .rank-item {
@@ -204,6 +217,40 @@
         .rank-num { font-weight: 800; color: #00f3ff; width: 20px; }
         .rank-word { flex: 1; margin-left: 8px; }
         .rank-count { font-weight: 700; color: #94a3b8; }
+
+        /* 수행평가 모달 스타일 */
+        .eval-title { font-size: 0.95rem; font-weight: 700; color: #00f3ff; margin-bottom: 12px; text-align: center; }
+        .eval-subject-card {
+            background: #080c10;
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        .eval-subject-title {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #00f3ff;
+            margin-bottom: 6px;
+            border-bottom: 1px solid #1e293b;
+            padding-bottom: 4px;
+        }
+        .eval-item-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .eval-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+            color: #cbd5e1;
+        }
+        .eval-item input[type="checkbox"] {
+            accent-color: #00f3ff;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -214,8 +261,19 @@
             <div class="top-bar">
                 <button class="icon-btn" onclick="openModal('calendarModal')" title="달력 보기">📅</button>
                 <div class="pomo-count-text">오늘 성공: <span class="count-num" id="todayPomo">0</span>회</div>
+                <button class="icon-btn" onclick="openModal('evalModal')" title="수행평가 체크">📝</button>
             </div>
             
+            <!-- 공부 과목 선택 -->
+            <select id="pomoSubject" class="subject-select">
+                <option value="독서와 작문">독서와 작문</option>
+                <option value="영어II">영어II</option>
+                <option value="미적분I">미적분I</option>
+                <option value="확률과 통계">확률과 통계</option>
+                <option value="생명과학">생명과학</option>
+                <option value="기타">기타</option>
+            </select>
+
             <div class="timer-display" id="timer">25:00</div>
             
             <div class="btn-group">
@@ -229,7 +287,7 @@
         <!-- 메모 카드 -->
         <div class="card memo-section">
             <div class="input-box">
-                <input type="text" id="wishInput" onkeypress="if(event.key==='Enter') addWish()">
+                <input type="text" id="wishInput" placeholder="딴생각 적기..." onkeypress="if(event.key==='Enter') addWish()">
                 <button class="btn btn-add" onclick="addWish()">적기</button>
             </div>
             <ul class="memo-list" id="memoList"></ul>
@@ -263,6 +321,15 @@
         </div>
     </div>
 
+    <!-- 3. 수행평가 관리 모달 -->
+    <div class="modal-overlay" id="evalModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('evalModal')">✕</button>
+            <div class="eval-title">수행평가 & 시험 체크리스트 📝</div>
+            <div id="evalContainer"></div>
+        </div>
+    </div>
+
     <script>
         /* 데이터 구조 (localStorage) */
         function getData() {
@@ -270,6 +337,13 @@
         }
         function saveData(data) {
             localStorage.setItem('pomodoro_app_data', JSON.stringify(data));
+        }
+
+        function getEvalData() {
+            return JSON.parse(localStorage.getItem('pomodoro_eval_data') || '{}');
+        }
+        function saveEvalData(data) {
+            localStorage.setItem('pomodoro_eval_data', JSON.stringify(data));
         }
 
         function getTodayKey() {
@@ -285,7 +359,10 @@
         }
 
         /* 1. 모달 제어 */
-        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function openModal(id) { 
+            document.getElementById(id).style.display = 'flex';
+            if (id === 'evalModal') renderEvaluations();
+        }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
         /* 2. 타이머 기능 */
@@ -314,8 +391,9 @@
                     data[today].pomo += 1;
                     saveData(data);
 
+                    const selectedSubject = document.getElementById('pomoSubject').value;
                     updateViews();
-                    alert("25분 뽀모도로 완료!");
+                    alert(`[${selectedSubject}] 25분 뽀모도로 완료!`);
                 }
             }, 1000);
         }
@@ -373,14 +451,13 @@
             });
         }
 
-        /* 4. 내 집중력 도둑 순위 집계 */
+        /* 4. 집중력 도둑 순위 */
         const TARGET_WORDS = ['야구', '노래', '유튜브', '게임'];
 
         function showThiefRank() {
             const data = getData();
             const counts = { '야구': 0, '노래': 0, '유튜브': 0, '게임': 0 };
 
-            // 지금까지 누적된 모든 날짜의 메모 탐색
             Object.values(data).forEach(day => {
                 if (day.memos && Array.isArray(day.memos)) {
                     day.memos.forEach(memo => {
@@ -393,7 +470,6 @@
                 }
             });
 
-            // 빈도수 정렬
             const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
 
             const rankList = document.getElementById('rankList');
@@ -492,6 +568,62 @@
                 div.innerHTML = html;
                 grid.appendChild(div);
             }
+        }
+
+        /* 6. 수행평가 / 시험 관리 기능 */
+        const EVAL_SUBJECTS = [
+            { name: "독서와 작문", items: ["수행1", "수행2", "수행3", "중간고사", "기말고사"] },
+            { name: "영어II", items: ["수행1", "수행2", "수행3", "중간고사", "기말고사"] },
+            { name: "미적분I", items: ["수행1", "수행2", "수행3", "중간고사", "기말고사"] },
+            { name: "확률과 통계", items: ["수행1", "수행2", "수행3", "중간고사", "기말고사"] },
+            { name: "생명과학", items: ["수행1", "수행2", "수행3", "중간고사", "기말고사"] },
+            { name: "역학과 에너지", items: ["수행1", "수행2", "수행3"] },
+            { name: "음악", items: ["수행1", "수행2", "수행3"] },
+            { name: "미술", items: ["수행1", "수행2", "수행3"] },
+            { name: "체육", items: ["수행1", "수행2", "수행3"] },
+            { name: "진로와직업", items: ["수행1", "수행2", "수행3"] }
+        ];
+
+        function toggleEvalCheck(subjectName, itemName) {
+            const evalData = getEvalData();
+            const key = `${subjectName}_${itemName}`;
+            evalData[key] = !evalData[key];
+            saveEvalData(evalData);
+        }
+
+        function renderEvaluations() {
+            const container = document.getElementById('evalContainer');
+            container.innerHTML = '';
+            const evalData = getEvalData();
+
+            EVAL_SUBJECTS.forEach(sub => {
+                const card = document.createElement('div');
+                card.className = 'eval-subject-card';
+
+                const title = document.createElement('div');
+                title.className = 'eval-subject-title';
+                title.textContent = sub.name;
+                card.appendChild(title);
+
+                const itemList = document.createElement('div');
+                itemList.className = 'eval-item-list';
+
+                sub.items.forEach(item => {
+                    const key = `${sub.name}_${item}`;
+                    const isChecked = !!evalData[key];
+
+                    const label = document.createElement('label');
+                    label.className = 'eval-item';
+                    label.innerHTML = `
+                        <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleEvalCheck('${sub.name}', '${item}')">
+                        <span>${item}</span>
+                    `;
+                    itemList.appendChild(label);
+                });
+
+                card.appendChild(itemList);
+                container.appendChild(card);
+            });
         }
 
         function updateViews() {
