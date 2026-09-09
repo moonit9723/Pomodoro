@@ -95,27 +95,47 @@
             letter-spacing: 1px;
         }
         
-        .btn-group { display: flex; gap: 8px; width: 100%; }
-        .btn {
-            flex: 1;
+        .btn-group { 
+            display: flex; 
+            flex-direction: column;
+            gap: 6px; 
+            width: 100%; 
+        }
+        .btn-start {
+            width: 100%;
             background-color: transparent;
             color: #00f3ff;
             border: 1.5px solid #00f3ff;
-            padding: 8px;
-            font-size: 0.88rem;
+            padding: 10px;
+            font-size: 0.95rem;
             font-weight: 700;
             border-radius: 8px;
             cursor: pointer;
             box-shadow: 0 0 8px rgba(0, 243, 255, 0.15);
             transition: all 0.2s ease;
         }
-        .btn:hover {
+        .btn-start:hover {
             background-color: #00f3ff;
             color: #080c10;
             box-shadow: 0 0 15px rgba(0, 243, 255, 0.5);
         }
-        .btn-reset { color: #526270; border-color: #1e293b; box-shadow: none; }
-        .btn-reset:hover { background-color: #1e293b; color: #ffffff; box-shadow: none; }
+        .btn-reset-small {
+            width: 100%;
+            background-color: transparent;
+            color: #ff4d4d;
+            border: 1px solid #3a1e28;
+            padding: 4px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-reset-small:hover {
+            background-color: #ff4d4d;
+            color: #ffffff;
+            border-color: #ff4d4d;
+        }
         
         .btn-thief {
             width: 100%;
@@ -145,7 +165,7 @@
             outline: none;
         }
         .input-box input:focus { border-color: #00f3ff; }
-        .btn-add { flex: 0 0 55px; padding: 8px; }
+        .btn-add { flex: 0 0 55px; padding: 8px; background: none; border: 1px solid #00f3ff; color: #00f3ff; border-radius: 6px; cursor: pointer; font-weight: bold; }
 
         .memo-list {
             list-style: none;
@@ -229,7 +249,7 @@
         .rank-word { flex: 1; margin-left: 8px; }
         .rank-count { font-weight: 700; color: #94a3b8; }
 
-        /* 수행평가 화면(페이지) 스타일 */
+        /* 수행평가 화면 스타일 */
         .eval-header {
             width: 100%;
             display: flex;
@@ -294,6 +314,11 @@
             align-items: center;
         }
         
+        .date-picker-container {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
         .date-picker-btn {
             background-color: #080c10;
             border: 1px solid #1e293b;
@@ -305,6 +330,20 @@
             outline: none;
         }
         .date-picker-btn:hover { border-color: #00f3ff; }
+        .date-reset-btn {
+            background: none;
+            border: 1px solid #1e293b;
+            color: #ff4d4d;
+            border-radius: 4px;
+            padding: 2px 5px;
+            font-size: 0.68rem;
+            cursor: pointer;
+        }
+        .date-reset-btn:hover {
+            border-color: #ff4d4d;
+            background-color: #ff4d4d;
+            color: #ffffff;
+        }
         
         .eval-period-select, .score-input {
             background-color: #080c10;
@@ -352,8 +391,8 @@
                 <div class="timer-display" id="timer">25:00</div>
                 
                 <div class="btn-group">
-                    <button class="btn" onclick="startTimer()">시작</button>
-                    <button class="btn btn-reset" onclick="resetTimer()">초기화</button>
+                    <button class="btn-start" onclick="startTimer()">시작</button>
+                    <button class="btn-reset-small" onclick="resetTimer()">초기화</button>
                 </div>
 
                 <button class="btn-thief" onclick="showThiefRank()">내 집중력 도둑은? 🔍</button>
@@ -363,7 +402,7 @@
             <div class="card memo-section">
                 <div class="input-box">
                     <input type="text" id="wishInput" placeholder="딴생각 적기..." onkeypress="if(event.key==='Enter') addWish()">
-                    <button class="btn btn-add" onclick="addWish()">적기</button>
+                    <button class="btn-add" onclick="addWish()">적기</button>
                 </div>
                 <ul class="memo-list" id="memoList"></ul>
             </div>
@@ -424,17 +463,28 @@
     <script>
         const FIXED_YEAR = 2026;
 
-        /* 과목 및 항목 정의 (진로와직업 제거, 음악/미술 수행1,2,3 지정) */
+        /* 과목 및 항목 정의 (미적분I '수학노트', 역학과 에너지 '수행1,2,3' 반영) */
         const EVAL_SUBJECTS = [
             { name: "독서와 작문", items: ["도장", "독후감", "테스트"] },
             { name: "영어II", items: ["영어듣기", "노트", "원더"] },
-            { name: "미적분I", items: ["9모 테스트", "10모 테스트", "노트"] },
+            { name: "미적분I", items: ["9모 테스트", "10모 테스트", "수학노트"] },
             { name: "확률과 통계", items: ["부교재/교재", "9월 테스트", "10월 테스트"] },
             { name: "생명과학", items: ["수행1", "수행2", "수행3", "중간고사", "기말고사"] },
-            { name: "역학과 에너지", items: ["배구", "배드민턴", "피구"] },
+            { name: "역학과 에너지", items: ["수행1", "수행2", "수행3"] },
             { name: "음악", items: ["수행1", "수행2", "수행3"] },
             { name: "미술", items: ["수행1", "수행2", "수행3"] },
-            { name: "체육", items: ["배구", "배드민턴", "피구"] }
+            { name: "체육", items: ["수행1", "수행2", "수행3"] }
+        ];
+
+        /* 날짜 초기화 버튼이 포함되어야 할 항목 목록 */
+        const RESET_DATE_ITEMS = [
+            "독서와 작문_독후감",
+            "영어II_원더",
+            "미적분I_수학노트",
+            "확률과 통계_부교재/교재",
+            "음악_수행1", "음악_수행2", "음악_수행3",
+            "미술_수행1", "미술_수행2", "미술_수행3",
+            "체육_수행1", "체육_수행2", "체육_수행3"
         ];
 
         /* 데이터 스토리지 */
@@ -682,7 +732,7 @@
             }
         }
 
-        /* 날짜 선택 피커 (수행평가 항목용 캘린더) */
+        /* 날짜 선택 피커 */
         let pickerTargetKey = null;
         let pickerCurrentDate = new Date(FIXED_YEAR, new Date().getMonth(), 1);
 
@@ -706,6 +756,16 @@
 
             closeModal('pickerModal');
             renderEvaluations();
+        }
+
+        function clearItemDate(subjectName, itemName) {
+            const key = `${subjectName}_${itemName}`;
+            const evalData = getEvalData();
+            if (evalData[key]) {
+                evalData[key].date = '';
+                saveEvalData(evalData);
+                renderEvaluations();
+            }
         }
 
         function renderPickerCalendar() {
@@ -794,11 +854,25 @@
                     const inputs = document.createElement('div');
                     inputs.className = 'eval-item-inputs';
 
-                    // 캘린더 피커 버튼 (연도 없이 표시)
+                    /* 날짜 선택 컨테이너 및 삭제(초기화) 버튼 */
+                    const dateContainer = document.createElement('div');
+                    dateContainer.className = 'date-picker-container';
+
                     const dateBtn = document.createElement('button');
                     dateBtn.className = 'date-picker-btn';
                     dateBtn.textContent = formatNoYear(itemData.date);
                     dateBtn.onclick = () => openDatePicker(sub.name, item);
+                    dateContainer.appendChild(dateBtn);
+
+                    // 지정된 항목들에만 날짜 삭제(✕) 버튼 추가
+                    if (RESET_DATE_ITEMS.includes(key)) {
+                        const dateResetBtn = document.createElement('button');
+                        dateResetBtn.className = 'date-reset-btn';
+                        dateResetBtn.textContent = '✕';
+                        dateResetBtn.title = '날짜 초기화';
+                        dateResetBtn.onclick = () => clearItemDate(sub.name, item);
+                        dateContainer.appendChild(dateResetBtn);
+                    }
 
                     // 교시 선택
                     const periodSelect = document.createElement('select');
@@ -812,7 +886,7 @@
                     }
                     periodSelect.onchange = (e) => updateEvalDetail(sub.name, item, 'period', e.target.value);
 
-                    // 점수 입력 (취득점수 / 만점)
+                    // 점수 입력
                     const scoreInput = document.createElement('input');
                     scoreInput.type = 'text';
                     scoreInput.className = 'score-input';
@@ -831,7 +905,7 @@
                     maxScoreInput.value = itemData.maxScore || '';
                     maxScoreInput.onchange = (e) => updateEvalDetail(sub.name, item, 'maxScore', e.target.value);
 
-                    inputs.appendChild(dateBtn);
+                    inputs.appendChild(dateContainer);
                     inputs.appendChild(periodSelect);
                     inputs.appendChild(scoreInput);
                     inputs.appendChild(slash);
