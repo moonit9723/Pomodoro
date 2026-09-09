@@ -95,19 +95,13 @@
             letter-spacing: 1px;
         }
         
-        .btn-group { 
-            display: flex; 
-            flex-direction: column;
-            gap: 6px; 
-            width: 100%; 
-        }
         .btn-start {
             width: 100%;
             background-color: transparent;
             color: #00f3ff;
             border: 1.5px solid #00f3ff;
-            padding: 10px;
-            font-size: 0.95rem;
+            padding: 12px;
+            font-size: 1rem;
             font-weight: 700;
             border-radius: 8px;
             cursor: pointer;
@@ -119,12 +113,14 @@
             color: #080c10;
             box-shadow: 0 0 15px rgba(0, 243, 255, 0.5);
         }
+
         .btn-reset-small {
             width: 100%;
+            margin-top: 8px;
             background-color: transparent;
             color: #ff4d4d;
             border: 1px solid #3a1e28;
-            padding: 4px;
+            padding: 5px;
             font-size: 0.72rem;
             font-weight: 600;
             border-radius: 6px;
@@ -314,11 +310,6 @@
             align-items: center;
         }
         
-        .date-picker-container {
-            display: flex;
-            align-items: center;
-            gap: 2px;
-        }
         .date-picker-btn {
             background-color: #080c10;
             border: 1px solid #1e293b;
@@ -330,14 +321,16 @@
             outline: none;
         }
         .date-picker-btn:hover { border-color: #00f3ff; }
+        
         .date-reset-btn {
             background: none;
             border: 1px solid #1e293b;
             color: #ff4d4d;
             border-radius: 4px;
-            padding: 2px 5px;
-            font-size: 0.68rem;
+            padding: 2px 6px;
+            font-size: 0.72rem;
             cursor: pointer;
+            margin-left: auto;
         }
         .date-reset-btn:hover {
             border-color: #ff4d4d;
@@ -381,19 +374,12 @@
                     <option value="미적분I">미적분I</option>
                     <option value="확률과 통계">확률과 통계</option>
                     <option value="생명과학">생명과학</option>
-                    <option value="역학과 에너지">역학과 에너지</option>
-                    <option value="음악">음악</option>
-                    <option value="미술">미술</option>
-                    <option value="체육">체육</option>
                     <option value="기타">기타</option>
                 </select>
 
                 <div class="timer-display" id="timer">25:00</div>
                 
-                <div class="btn-group">
-                    <button class="btn-start" onclick="startTimer()">시작</button>
-                    <button class="btn-reset-small" onclick="resetTimer()">초기화</button>
-                </div>
+                <button class="btn-start" onclick="startTimer()">시작</button>
 
                 <button class="btn-thief" onclick="showThiefRank()">내 집중력 도둑은? 🔍</button>
             </div>
@@ -405,6 +391,7 @@
                     <button class="btn-add" onclick="addWish()">적기</button>
                 </div>
                 <ul class="memo-list" id="memoList"></ul>
+                <button class="btn-reset-small" onclick="resetTimer()">초기화</button>
             </div>
         </div>
     </div>
@@ -463,17 +450,13 @@
     <script>
         const FIXED_YEAR = 2026;
 
-        /* 과목 및 항목 정의 (미적분I '수학노트', 역학과 에너지 '수행1,2,3' 반영) */
+        /* 과목 및 항목 정의 (역학과 에너지, 음미체 삭제 반영) */
         const EVAL_SUBJECTS = [
             { name: "독서와 작문", items: ["도장", "독후감", "테스트"] },
             { name: "영어II", items: ["영어듣기", "노트", "원더"] },
             { name: "미적분I", items: ["9모 테스트", "10모 테스트", "수학노트"] },
             { name: "확률과 통계", items: ["부교재/교재", "9월 테스트", "10월 테스트"] },
-            { name: "생명과학", items: ["수행1", "수행2", "수행3", "중간고사", "기말고사"] },
-            { name: "역학과 에너지", items: ["수행1", "수행2", "수행3"] },
-            { name: "음악", items: ["수행1", "수행2", "수행3"] },
-            { name: "미술", items: ["수행1", "수행2", "수행3"] },
-            { name: "체육", items: ["수행1", "수행2", "수행3"] }
+            { name: "생명과학", items: ["수행1", "수행2", "수행3", "중간고사", "기말고사"] }
         ];
 
         /* 날짜 초기화 버튼이 포함되어야 할 항목 목록 */
@@ -481,10 +464,7 @@
             "독서와 작문_독후감",
             "영어II_원더",
             "미적분I_수학노트",
-            "확률과 통계_부교재/교재",
-            "음악_수행1", "음악_수행2", "음악_수행3",
-            "미술_수행1", "미술_수행2", "미술_수행3",
-            "체육_수행1", "체육_수행2", "체육_수행3"
+            "확률과 통계_부교재/교재"
         ];
 
         /* 데이터 스토리지 */
@@ -759,12 +739,14 @@
         }
 
         function clearItemDate(subjectName, itemName) {
-            const key = `${subjectName}_${itemName}`;
-            const evalData = getEvalData();
-            if (evalData[key]) {
-                evalData[key].date = '';
-                saveEvalData(evalData);
-                renderEvaluations();
+            if (confirm("설정된 날짜를 초기화하시겠습니까?")) {
+                const key = `${subjectName}_${itemName}`;
+                const evalData = getEvalData();
+                if (evalData[key]) {
+                    evalData[key].date = '';
+                    saveEvalData(evalData);
+                    renderEvaluations();
+                }
             }
         }
 
@@ -854,25 +836,11 @@
                     const inputs = document.createElement('div');
                     inputs.className = 'eval-item-inputs';
 
-                    /* 날짜 선택 컨테이너 및 삭제(초기화) 버튼 */
-                    const dateContainer = document.createElement('div');
-                    dateContainer.className = 'date-picker-container';
-
+                    /* 날짜 선택 버튼 */
                     const dateBtn = document.createElement('button');
                     dateBtn.className = 'date-picker-btn';
                     dateBtn.textContent = formatNoYear(itemData.date);
                     dateBtn.onclick = () => openDatePicker(sub.name, item);
-                    dateContainer.appendChild(dateBtn);
-
-                    // 지정된 항목들에만 날짜 삭제(✕) 버튼 추가
-                    if (RESET_DATE_ITEMS.includes(key)) {
-                        const dateResetBtn = document.createElement('button');
-                        dateResetBtn.className = 'date-reset-btn';
-                        dateResetBtn.textContent = '✕';
-                        dateResetBtn.title = '날짜 초기화';
-                        dateResetBtn.onclick = () => clearItemDate(sub.name, item);
-                        dateContainer.appendChild(dateResetBtn);
-                    }
 
                     // 교시 선택
                     const periodSelect = document.createElement('select');
@@ -905,11 +873,21 @@
                     maxScoreInput.value = itemData.maxScore || '';
                     maxScoreInput.onchange = (e) => updateEvalDetail(sub.name, item, 'maxScore', e.target.value);
 
-                    inputs.appendChild(dateContainer);
+                    inputs.appendChild(dateBtn);
                     inputs.appendChild(periodSelect);
                     inputs.appendChild(scoreInput);
                     inputs.appendChild(slash);
                     inputs.appendChild(maxScoreInput);
+
+                    // 맨 끝에 배치되는 날짜 초기화(✕) 버튼 (지정된 항목만)
+                    if (RESET_DATE_ITEMS.includes(key)) {
+                        const dateResetBtn = document.createElement('button');
+                        dateResetBtn.className = 'date-reset-btn';
+                        dateResetBtn.textContent = '✕';
+                        dateResetBtn.title = '날짜 초기화';
+                        dateResetBtn.onclick = () => clearItemDate(sub.name, item);
+                        inputs.appendChild(dateResetBtn);
+                    }
 
                     row.appendChild(top);
                     row.appendChild(inputs);
