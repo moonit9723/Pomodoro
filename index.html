@@ -18,7 +18,6 @@
             padding: 20px 10px;
             margin: 0;
         }
-        
         .container {
             display: flex;
             flex-direction: column;
@@ -26,8 +25,6 @@
             max-width: 400px;
             width: 100%;
         }
-
-        /* 화면 전환 제어 */
         .page {
             display: none;
             width: 100%;
@@ -36,7 +33,6 @@
             align-items: center;
         }
         .page.active { display: flex; }
-        
         .card {
             background: #0f171e;
             padding: 16px;
@@ -49,8 +45,6 @@
             position: relative;
             width: 100%;
         }
-        
-        /* 상단 헤더 */
         .top-bar {
             width: 100%;
             display: flex;
@@ -70,7 +64,6 @@
         .icon-btn:hover { transform: scale(1.15); }
         .pomo-count-text { font-size: 0.82rem; color: #94a3b8; }
         .count-num { color: #00f3ff; font-weight: 700; }
-        
         .subject-select {
             width: 100%;
             padding: 6px 10px;
@@ -83,8 +76,6 @@
             margin-bottom: 8px;
             outline: none;
         }
-
-        /* 타이머 영역 */
         .timer-display {
             font-size: 3.5rem;
             font-weight: 800;
@@ -94,7 +85,6 @@
             font-variant-numeric: tabular-nums;
             letter-spacing: 1px;
         }
-        
         .btn-start {
             width: 100%;
             background-color: transparent;
@@ -113,7 +103,6 @@
             color: #080c10;
             box-shadow: 0 0 15px rgba(0, 243, 255, 0.5);
         }
-
         .btn-reset-small {
             width: 100%;
             margin-top: 8px;
@@ -132,7 +121,6 @@
             color: #ffffff;
             border-color: #ff4d4d;
         }
-        
         .btn-thief {
             width: 100%;
             margin-top: 10px;
@@ -146,8 +134,6 @@
             cursor: pointer;
         }
         .btn-thief:hover { background-color: #1a2d3d; }
-
-        /* 메모 영역 */
         .memo-section { align-items: stretch; padding: 14px; margin-top: 12px; }
         .input-box { display: flex; gap: 8px; margin-bottom: 8px; }
         .input-box input {
@@ -162,7 +148,6 @@
         }
         .input-box input:focus { border-color: #00f3ff; }
         .btn-add { flex: 0 0 55px; padding: 8px; background: none; border: 1px solid #00f3ff; color: #00f3ff; border-radius: 6px; cursor: pointer; font-weight: bold; }
-
         .memo-list {
             list-style: none;
             padding: 0;
@@ -186,8 +171,6 @@
         }
         .btn-del { background: none; border: none; color: #475569; cursor: pointer; font-size: 0.8rem; }
         .btn-del:hover { color: #ff3366; }
-
-        /* 모달 공통 */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -207,20 +190,20 @@
             width: 90%;
             max-width: 380px;
             max-height: 85vh;
+            padding-top: 20px;
             overflow-y: auto;
             position: relative;
         }
         .modal-close {
             position: absolute;
-            top: 10px; right: 12px;
+            top: 6px; right: 8px;
+            z-index: 20;
             background: none; border: none;
             color: #94a3b8; font-size: 1.1rem; cursor: pointer;
         }
-        
-        /* 달력 컴포넌트 */
-        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-right: 34px; gap: 8px; }
         .calendar-title { font-size: 0.88rem; font-weight: 700; color: #00f3ff; }
-        .calendar-nav { background: none; border: none; color: #94a3b8; cursor: pointer; }
+        .calendar-nav { background: none; border: none; color: #94a3b8; cursor: pointer; position: relative; z-index: 21; min-width: 30px; min-height: 30px; padding: 4px 8px; touch-action: manipulation; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; text-align: center; font-size: 0.7rem; }
         .day-name { color: #64748b; font-weight: 600; padding-bottom: 2px; }
         .day-cell {
@@ -234,7 +217,6 @@
         .detail-box { margin-top: 8px; padding-top: 8px; border-top: 1px solid #1e293b; font-size: 0.8rem; }
         .detail-title { color: #00f3ff; font-weight: 700; margin-bottom: 4px; }
         .detail-list { list-style: square; padding-left: 14px; margin: 0; color: #cbd5e1; }
-
         .thief-title { font-size: 0.95rem; font-weight: 700; color: #00f3ff; margin-bottom: 12px; text-align: center; }
         .rank-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
         .rank-item {
@@ -244,8 +226,6 @@
         .rank-num { font-weight: 800; color: #00f3ff; width: 20px; }
         .rank-word { flex: 1; margin-left: 8px; }
         .rank-count { font-weight: 700; color: #94a3b8; }
-
-        /* 수행평가 화면 스타일 */
         .eval-header {
             width: 100%;
             display: flex;
@@ -265,7 +245,6 @@
         }
         .btn-back:hover { background: #00f3ff; color: #080c10; }
         .eval-page-title { font-size: 1.05rem; font-weight: 800; color: #00f3ff; }
-        
         .eval-subject-card {
             background: #080c10;
             border: 1px solid #1e293b;
@@ -283,7 +262,6 @@
             padding-bottom: 4px;
         }
         .eval-item-list { display: flex; flex-direction: column; gap: 8px; }
-        
         .eval-item-row {
             display: flex;
             flex-direction: column;
@@ -301,7 +279,6 @@
             color: #cbd5e1;
         }
         .eval-item-top input[type="checkbox"] { accent-color: #00f3ff; cursor: pointer; }
-        
         .eval-item-inputs {
             display: flex;
             flex-wrap: wrap;
@@ -309,7 +286,6 @@
             margin-left: 22px;
             align-items: center;
         }
-        
         .date-picker-btn {
             background-color: #080c10;
             border: 1px solid #1e293b;
@@ -321,7 +297,6 @@
             outline: none;
         }
         .date-picker-btn:hover { border-color: #00f3ff; }
-        
         .date-reset-btn {
             background: none;
             border: 1px solid #1e293b;
@@ -337,7 +312,6 @@
             background-color: #ff4d4d;
             color: #ffffff;
         }
-        
         .eval-period-select, .score-input {
             background-color: #080c10;
             border: 1px solid #1e293b;
@@ -357,8 +331,6 @@
     </style>
 </head>
 <body>
-
-    <!-- [페이지 1] 타이머 메인 화면 -->
     <div id="app-timer" class="page active">
         <div class="container">
             <div class="card">
@@ -367,8 +339,6 @@
                     <div class="pomo-count-text">오늘 성공: <span class="count-num" id="todayPomo">0</span>회</div>
                     <button class="icon-btn" onclick="switchPage('app-eval')" title="수행평가 화면으로 이동">📝</button>
                 </div>
-                
-                <!-- 공부 과목 선택 드롭다운 (역학과 에너지, 음미체 삭제 반영) -->
                 <select id="pomoSubject" class="subject-select">
                     <option value="독서와 작문">독서와 작문</option>
                     <option value="영어II">영어II</option>
@@ -377,15 +347,10 @@
                     <option value="생명과학">생명과학</option>
                     <option value="기타">기타</option>
                 </select>
-
                 <div class="timer-display" id="timer">25:00</div>
-                
                 <button class="btn-start" onclick="startTimer()">시작</button>
-
                 <button class="btn-thief" onclick="showThiefRank()">내 집중력 도둑은? 🔍</button>
             </div>
-
-            <!-- 메모 카드 -->
             <div class="card memo-section">
                 <div class="input-box">
                     <input type="text" id="wishInput" placeholder="딴생각 적기..." onkeypress="if(event.key==='Enter') addWish()">
@@ -396,8 +361,6 @@
             </div>
         </div>
     </div>
-
-    <!-- [페이지 2] 수행평가 및 시험 전체 화면 -->
     <div id="app-eval" class="page">
         <div class="card">
             <div class="eval-header">
@@ -407,8 +370,6 @@
             <div id="evalContainer" style="width: 100%;"></div>
         </div>
     </div>
-
-    <!-- 1. 메인 캘린더 모달 -->
     <div class="modal-overlay" id="calendarModal">
         <div class="modal-content">
             <button class="modal-close" onclick="closeModal('calendarModal')">✕</button>
@@ -418,15 +379,12 @@
                 <button class="calendar-nav" onclick="changeMonth(1)">❯</button>
             </div>
             <div class="calendar-grid" id="calendarGrid"></div>
-            
             <div class="detail-box" id="detailBox" style="display: none;">
                 <div class="detail-title" id="detailDate"></div>
                 <ul class="detail-list" id="detailList"></ul>
             </div>
         </div>
     </div>
-
-    <!-- 2. 수행평가 전용 날짜 선택 캘린더 모달 -->
     <div class="modal-overlay" id="pickerModal">
         <div class="modal-content">
             <button class="modal-close" onclick="closeModal('pickerModal')">✕</button>
@@ -438,8 +396,6 @@
             <div class="calendar-grid" id="pickerGrid"></div>
         </div>
     </div>
-
-    <!-- 3. 집중력 도둑 순위 모달 -->
     <div class="modal-overlay" id="thiefModal">
         <div class="modal-content">
             <button class="modal-close" onclick="closeModal('thiefModal')">✕</button>
@@ -447,11 +403,11 @@
             <ul class="rank-list" id="rankList"></ul>
         </div>
     </div>
-
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
     <script>
-        const FIXED_YEAR = 2026;
-
-        /* 수행평가 전용 과목 및 항목 전체 복원 */
+        const FIXED_YEAR = 2026; // 기존 데이터 호환용 기준 연도
         const EVAL_SUBJECTS = [
             { name: "독서와 작문", items: ["도장", "독후감", "테스트"] },
             { name: "영어II", items: ["영어듣기", "노트", "원더"] },
@@ -459,31 +415,65 @@
             { name: "확률과 통계", items: ["부교재/교재", "9월 테스트", "10월 테스트"] },
             { name: "역학과 에너지", items: ["수행1", "수행2", "수행3", "중간고사", "기말고사"] },
             { name: "생명과학", items: ["수행1", "수행2", "수행3", "중간고사", "기말고사"] },
-            { name: "음악", items: ["수행1", "수행2"] },
-            { name: "미술", items: ["수행1", "수행2"] },
-            { name: "체육", items: ["수행1", "수행2"] }
+            { name: "음악", items: ["수행1", "수행2", "수행3"] },
+            { name: "미술", items: ["수행1", "수행2", "수행3"] },
+            { name: "체육", items: ["수행1", "수행2", "수행3"] }
         ];
-
-        /* 날짜 초기화 버튼이 활성화되는 특정 항목들 */
         const RESET_DATE_ITEMS = [
             "독서와 작문_독후감",
             "영어II_원더",
             "미적분I_수학노트",
             "확률과 통계_부교재/교재"
         ];
-
-        /* 데이터 스토리지 */
         function getData() { return JSON.parse(localStorage.getItem('pomodoro_app_data') || '{}'); }
-        function saveData(data) { localStorage.setItem('pomodoro_app_data', JSON.stringify(data)); }
-
+        function saveData(data) { localStorage.setItem('pomodoro_app_data', JSON.stringify(data)); syncToCloud('pomodoro_app_data', data); }
         function getEvalData() { return JSON.parse(localStorage.getItem('pomodoro_eval_v3_data') || '{}'); }
-        function saveEvalData(data) { localStorage.setItem('pomodoro_eval_v3_data', JSON.stringify(data)); }
-
+        function saveEvalData(data) { localStorage.setItem('pomodoro_eval_v3_data', JSON.stringify(data)); syncToCloud('pomodoro_eval_v3_data', data); }
+        const SYNC_CONFIG = {
+            apiKey: "YOUR_FIREBASE_API_KEY",
+            authDomain: "YOUR_FIREBASE_AUTH_DOMAIN",
+            databaseURL: "YOUR_FIREBASE_DATABASE_URL",
+            projectId: "YOUR_FIREBASE_PROJECT_ID",
+            storageBucket: "YOUR_FIREBASE_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_FIREBASE_MESSAGING_SENDER_ID",
+            appId: "YOUR_FIREBASE_APP_ID"
+        };
+        const SYNC_ID_KEY = 'pomodoro_sync_id';
+        let syncReady = false;
+        let syncRef = null;
+        function hasFirebaseConfig() { return !Object.values(SYNC_CONFIG).some(v => String(v).startsWith('YOUR_')); }
+        function getSyncId() {
+            let id = localStorage.getItem(SYNC_ID_KEY);
+            if (!id) { id = prompt('기기 간 동기화용 코드(같은 코드를 모든 기기에 입력하세요):') || ''; if (id) localStorage.setItem(SYNC_ID_KEY, id); }
+            return id;
+        }
+        async function initCloudSync() {
+            if (!hasFirebaseConfig()) return;
+            try {
+                if (!window.firebase) return;
+                if (!firebase.apps.length) firebase.initializeApp(SYNC_CONFIG);
+                const id = getSyncId();
+                if (!id) return;
+                await firebase.auth().signInAnonymously();
+                syncRef = firebase.database().ref('pomodoroUsers/' + encodeURIComponent(id));
+                syncReady = true;
+                syncRef.on('value', snap => {
+                    const remote = snap.val();
+                    if (!remote) return;
+                    if (remote.pomodoro_app_data) localStorage.setItem('pomodoro_app_data', JSON.stringify(remote.pomodoro_app_data));
+                    if (remote.pomodoro_eval_v3_data) localStorage.setItem('pomodoro_eval_v3_data', JSON.stringify(remote.pomodoro_eval_v3_data));
+                    updateViews();
+                    if (document.getElementById('app-eval').classList.contains('active')) renderEvaluations();
+                });
+            } catch (e) { console.warn('기기 동기화 초기화 실패:', e); }
+        }
+        function syncToCloud(key, value) {
+            if (syncReady && syncRef) syncRef.child(key).set(value).catch(console.warn);
+        }
         function getTodayKey() {
             const now = new Date();
-            return `${FIXED_YEAR}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
         }
-
         function formatNoYear(dateStr) {
             if (!dateStr) return '날짜 선택';
             const parts = dateStr.split('-');
@@ -492,39 +482,29 @@
             }
             return dateStr;
         }
-
         function initDayData(data, dateKey) {
             if (!data[dateKey]) { data[dateKey] = { pomo: 0, memos: [] }; }
             return data;
         }
-
-        /* 페이지 전환 */
         function switchPage(pageId) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById(pageId).classList.add('active');
-
             if (pageId === 'app-eval') {
                 renderEvaluations();
             }
         }
-
-        /* 모달 제어 */
         function openModal(id) { 
             document.getElementById(id).style.display = 'flex';
             if (id === 'calendarModal') renderCalendar();
         }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-
-        /* 타이머 기능 */
         let timerInterval;
         let timeLeft = 25 * 60;
-
         function updateTimerDisplay() {
             const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
             const s = (timeLeft % 60).toString().padStart(2, '0');
             document.getElementById('timer').textContent = `${m}:${s}`;
         }
-
         function startTimer() {
             if (timerInterval) return;
             timerInterval = setInterval(() => {
@@ -534,43 +514,35 @@
                 } else {
                     clearInterval(timerInterval);
                     timerInterval = null;
-                    
                     const today = getTodayKey();
                     let data = getData();
                     data = initDayData(data, today);
                     data[today].pomo += 1;
                     saveData(data);
-
                     const selectedSubject = document.getElementById('pomoSubject').value;
                     updateViews();
                     alert(`[${selectedSubject}] 25분 뽀모도로 완료!`);
                 }
             }, 1000);
         }
-
         function resetTimer() {
             clearInterval(timerInterval);
             timerInterval = null;
             timeLeft = 25 * 60;
             updateTimerDisplay();
         }
-
-        /* 메모 기능 */
         function addWish() {
             const input = document.getElementById('wishInput');
             let text = input.value.trim();
             if (!text) return;
-
             const today = getTodayKey();
             let data = getData();
             data = initDayData(data, today);
             data[today].memos.unshift(text);
             saveData(data);
-
             input.value = '';
             updateViews();
         }
-
         function deleteWish(index) {
             const today = getTodayKey();
             let data = getData();
@@ -580,14 +552,11 @@
                 updateViews();
             }
         }
-
         function renderTodayMemos() {
             const today = getTodayKey();
             const data = getData();
             const todayData = data[today] || { pomo: 0, memos: [] };
-
             document.getElementById('todayPomo').textContent = todayData.pomo;
-
             const ul = document.getElementById('memoList');
             ul.innerHTML = '';
             todayData.memos.forEach((text, i) => {
@@ -600,14 +569,10 @@
                 ul.appendChild(li);
             });
         }
-
-        /* 집중력 도둑 순위 */
         const TARGET_WORDS = ['야구', '노래', '유튜브', '게임'];
-
         function showThiefRank() {
             const data = getData();
             const counts = { '야구': 0, '노래': 0, '유튜브': 0, '게임': 0 };
-
             Object.values(data).forEach(day => {
                 if (day.memos && Array.isArray(day.memos)) {
                     day.memos.forEach(memo => {
@@ -617,12 +582,9 @@
                     });
                 }
             });
-
             const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-
             const rankList = document.getElementById('rankList');
             rankList.innerHTML = '';
-
             sorted.forEach(([word, count], idx) => {
                 const li = document.createElement('li');
                 li.className = 'rank-item';
@@ -633,36 +595,28 @@
                 `;
                 rankList.appendChild(li);
             });
-
             openModal('thiefModal');
         }
-
-        /* 메인 캘린더 */
-        let currentDate = new Date(FIXED_YEAR, new Date().getMonth(), 1);
+        let currentDate = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
         let selectedDateKey = getTodayKey();
-
         function changeMonth(delta) {
             currentDate.setMonth(currentDate.getMonth() + delta);
             renderCalendar();
         }
-
         function selectDate(dateStr) {
             selectedDateKey = dateStr;
             renderCalendar();
             renderDetail(dateStr);
         }
-
         function renderDetail(dateStr) {
             const data = getData();
             const dayData = data[dateStr] || { pomo: 0, memos: [] };
             const detailBox = document.getElementById('detailBox');
             const detailTitle = document.getElementById('detailDate');
             const detailList = document.getElementById('detailList');
-
             detailBox.style.display = 'block';
             detailTitle.textContent = `${formatNoYear(dateStr)} (뽀모도로 ${dayData.pomo}회)`;
             detailList.innerHTML = '';
-
             if (dayData.memos.length === 0) {
                 detailList.innerHTML = '<li>메모가 없습니다.</li>';
             } else {
@@ -673,15 +627,11 @@
                 });
             }
         }
-
         function renderCalendar() {
             const month = currentDate.getMonth();
-
-            document.getElementById('calendarMonth').textContent = `${month + 1}월`;
-
+            document.getElementById('calendarMonth').textContent = `${currentDate.getFullYear()}년 ${month + 1}월`;
             const grid = document.getElementById('calendarGrid');
             grid.innerHTML = '';
-
             const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
             dayNames.forEach(d => {
                 const div = document.createElement('div');
@@ -689,25 +639,21 @@
                 div.textContent = d;
                 grid.appendChild(div);
             });
-
-            const firstDay = new Date(FIXED_YEAR, month, 1).getDay();
-            const lastDate = new Date(FIXED_YEAR, month + 1, 0).getDate();
+            const year = currentDate.getFullYear();
+            const firstDay = new Date(year, month, 1).getDay();
+            const lastDate = new Date(year, month + 1, 0).getDate();
             const data = getData();
-
             for (let i = 0; i < firstDay; i++) {
                 const div = document.createElement('div');
                 div.className = 'day-cell empty';
                 grid.appendChild(div);
             }
-
             for (let d = 1; d <= lastDate; d++) {
-                const dayStr = `${FIXED_YEAR}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const dayStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
                 const dayData = data[dayStr] || { pomo: 0, memos: [] };
-
                 const div = document.createElement('div');
                 div.className = 'day-cell' + (dayStr === selectedDateKey ? ' selected' : '');
                 div.onclick = () => selectDate(dayStr);
-                
                 let html = `<span>${d}</span>`;
                 if (dayData.pomo > 0) {
                     html += `<span class="pomo-badge">🍅${dayData.pomo}</span>`;
@@ -716,33 +662,26 @@
                 grid.appendChild(div);
             }
         }
-
-        /* 날짜 선택 피커 */
         let pickerTargetKey = null;
-        let pickerCurrentDate = new Date(FIXED_YEAR, new Date().getMonth(), 1);
-
+        let pickerCurrentDate = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
         function openDatePicker(subjectName, itemName) {
             pickerTargetKey = `${subjectName}_${itemName}`;
             openModal('pickerModal');
             renderPickerCalendar();
         }
-
         function changePickerMonth(delta) {
             pickerCurrentDate.setMonth(pickerCurrentDate.getMonth() + delta);
             renderPickerCalendar();
         }
-
         function selectPickerDate(dateStr) {
             if (!pickerTargetKey) return;
             const evalData = getEvalData();
             if (!evalData[pickerTargetKey]) evalData[pickerTargetKey] = {};
             evalData[pickerTargetKey].date = dateStr;
             saveEvalData(evalData);
-
             closeModal('pickerModal');
             renderEvaluations();
         }
-
         function clearItemDate(subjectName, itemName) {
             if (confirm("설정된 날짜를 초기화하시겠습니까?")) {
                 const key = `${subjectName}_${itemName}`;
@@ -754,14 +693,11 @@
                 }
             }
         }
-
         function renderPickerCalendar() {
             const month = pickerCurrentDate.getMonth();
-            document.getElementById('pickerMonthTitle').textContent = `${month + 1}월`;
-
+            document.getElementById('pickerMonthTitle').textContent = `${pickerCurrentDate.getFullYear()}년 ${month + 1}월`;
             const grid = document.getElementById('pickerGrid');
             grid.innerHTML = '';
-
             const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
             dayNames.forEach(d => {
                 const div = document.createElement('div');
@@ -769,18 +705,16 @@
                 div.textContent = d;
                 grid.appendChild(div);
             });
-
-            const firstDay = new Date(FIXED_YEAR, month, 1).getDay();
-            const lastDate = new Date(FIXED_YEAR, month + 1, 0).getDate();
-
+            const year = currentDate.getFullYear();
+            const firstDay = new Date(year, month, 1).getDay();
+            const lastDate = new Date(year, month + 1, 0).getDate();
             for (let i = 0; i < firstDay; i++) {
                 const div = document.createElement('div');
                 div.className = 'day-cell empty';
                 grid.appendChild(div);
             }
-
             for (let d = 1; d <= lastDate; d++) {
-                const dayStr = `${FIXED_YEAR}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const dayStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
                 const div = document.createElement('div');
                 div.className = 'day-cell';
                 div.onclick = () => selectPickerDate(dayStr);
@@ -788,8 +722,6 @@
                 grid.appendChild(div);
             }
         }
-
-        /* 수행평가 제어 및 렌더링 */
         function toggleEvalCheck(subjectName, itemName) {
             const evalData = getEvalData();
             const key = `${subjectName}_${itemName}`;
@@ -798,7 +730,6 @@
             saveEvalData(evalData);
             renderEvaluations();
         }
-
         function updateEvalDetail(subjectName, itemName, field, value) {
             const evalData = getEvalData();
             const key = `${subjectName}_${itemName}`;
@@ -806,47 +737,36 @@
             evalData[key][field] = value;
             saveEvalData(evalData);
         }
-
         function renderEvaluations() {
             const container = document.getElementById('evalContainer');
             container.innerHTML = '';
             const evalData = getEvalData();
-
             EVAL_SUBJECTS.forEach(sub => {
                 const card = document.createElement('div');
                 card.className = 'eval-subject-card';
-
                 const title = document.createElement('div');
                 title.className = 'eval-subject-title';
                 title.textContent = sub.name;
                 card.appendChild(title);
-
                 const itemList = document.createElement('div');
                 itemList.className = 'eval-item-list';
-
                 sub.items.forEach(item => {
                     const key = `${sub.name}_${item}`;
                     const itemData = evalData[key] || { checked: false, date: '', period: '1', score: '', maxScore: '' };
-
                     const row = document.createElement('div');
                     row.className = 'eval-item-row';
-
                     const top = document.createElement('label');
                     top.className = 'eval-item-top';
                     top.innerHTML = `
                         <input type="checkbox" ${itemData.checked ? 'checked' : ''} onchange="toggleEvalCheck('${sub.name}', '${item}')">
                         <span style="${itemData.checked ? 'text-decoration: line-through; color: #64748b;' : ''}">${item}</span>
                     `;
-
                     const inputs = document.createElement('div');
                     inputs.className = 'eval-item-inputs';
-
-                    /* 날짜 선택 버튼 */
                     const dateBtn = document.createElement('button');
                     dateBtn.className = 'date-picker-btn';
                     dateBtn.textContent = formatNoYear(itemData.date);
                     dateBtn.onclick = () => openDatePicker(sub.name, item);
-
                     // 교시 선택
                     const periodSelect = document.createElement('select');
                     periodSelect.className = 'eval-period-select';
@@ -858,7 +778,6 @@
                         periodSelect.appendChild(opt);
                     }
                     periodSelect.onchange = (e) => updateEvalDetail(sub.name, item, 'period', e.target.value);
-
                     // 점수 입력
                     const scoreInput = document.createElement('input');
                     scoreInput.type = 'text';
@@ -866,44 +785,37 @@
                     scoreInput.placeholder = '점수';
                     scoreInput.value = itemData.score || '';
                     scoreInput.onchange = (e) => updateEvalDetail(sub.name, item, 'score', e.target.value);
-
                     const slash = document.createElement('span');
                     slash.className = 'score-slash';
                     slash.textContent = '/';
-
                     const maxScoreInput = document.createElement('input');
                     maxScoreInput.type = 'text';
                     maxScoreInput.className = 'score-input';
                     maxScoreInput.placeholder = '만점';
                     maxScoreInput.value = itemData.maxScore || '';
                     maxScoreInput.onchange = (e) => updateEvalDetail(sub.name, item, 'maxScore', e.target.value);
-
                     inputs.appendChild(dateBtn);
                     inputs.appendChild(periodSelect);
                     inputs.appendChild(scoreInput);
                     inputs.appendChild(slash);
                     inputs.appendChild(maxScoreInput);
-
                     // 맨 끝(점수 입력란 오른쪽)에 위치하는 날짜 초기화 버튼 (지정 항목)
                     if (RESET_DATE_ITEMS.includes(key)) {
                         const dateResetBtn = document.createElement('button');
                         dateResetBtn.className = 'date-reset-btn';
                         dateResetBtn.textContent = '✕';
                         dateResetBtn.title = '날짜 초기화';
-                        dateResetBtn.onclick = () => clearItemDate(sub.name, item);
+                        dateResetBtn.onclick = (e) => { e.stopPropagation(); clearItemDate(sub.name, item); };
                         inputs.appendChild(dateResetBtn);
                     }
-
                     row.appendChild(top);
                     row.appendChild(inputs);
                     itemList.appendChild(row);
                 });
-
                 card.appendChild(itemList);
                 container.appendChild(card);
             });
         }
-
         function updateViews() {
             renderTodayMemos();
             renderCalendar();
@@ -911,8 +823,8 @@
                 renderDetail(selectedDateKey);
             }
         }
-
         updateViews();
+        initCloudSync();
     </script>
 </body>
 </html>
