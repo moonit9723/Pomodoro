@@ -85,6 +85,13 @@
             font-variant-numeric: tabular-nums;
             letter-spacing: 1px;
         }
+        .timer-status {
+            font-size: 0.78rem;
+            color: #64748b;
+            margin-top: -6px;
+            margin-bottom: 8px;
+            min-height: 14px;
+        }
         .btn-start {
             width: 100%;
             background-color: transparent;
@@ -348,6 +355,7 @@
                     <option value="기타">기타</option>
                 </select>
                 <div class="timer-display" id="timer">25:00</div>
+                <div class="timer-status" id="timerStatus"></div>
                 <button class="btn-start" onclick="startTimer()">시작</button>
                 <button class="btn-thief" onclick="showThiefRank()">내 집중력 도둑은? 🔍</button>
             </div>
@@ -403,11 +411,41 @@
             <ul class="rank-list" id="rankList"></ul>
         </div>
     </div>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
     <script>
-        const FIXED_YEAR = 2026; // 기존 데이터 호환용 기준 연도
+        // ── 데이터 저장: Claude 계정 기반 영구 저장소(window.storage) 사용 ──
+        // shared=false(개인 저장소)로 저장하면 같은 계정으로 로그인한
+        // 다른 기기(휴대폰/PC 등)에서도 동일한 데이터를 그대로 불러올 수 있습니다.
+        async function getData() {
+            try {
+                const result = await window.storage.get('pomodoro_app_data', false);
+                return result ? JSON.parse(result.value) : {};
+            } catch (e) {
+                return {};
+            }
+        }
+        async function saveData(data) {
+            try {
+                await window.storage.set('pomodoro_app_data', JSON.stringify(data), false);
+            } catch (e) {
+                console.error('저장 실패:', e);
+            }
+        }
+        async function getEvalData() {
+            try {
+                const result = await window.storage.get('pomodoro_eval_v3_data', false);
+                return result ? JSON.parse(result.value) : {};
+            } catch (e) {
+                return {};
+            }
+        }
+        async function saveEvalData(data) {
+            try {
+                await window.storage.set('pomodoro_eval_v3_data', JSON.stringify(data), false);
+            } catch (e) {
+                console.error('저장 실패:', e);
+            }
+        }
+
         const EVAL_SUBJECTS = [
             { name: "독서와 작문", items: ["도장", "독후감", "테스트"] },
             { name: "영어II", items: ["영어듣기", "노트", "원더"] },
@@ -425,51 +463,6 @@
             "미적분I_수학노트",
             "확률과 통계_부교재/교재"
         ];
-        function getData() { return JSON.parse(localStorage.getItem('pomodoro_app_data') || '{}'); }
-        function saveData(data) { localStorage.setItem('pomodoro_app_data', JSON.stringify(data)); syncToCloud('pomodoro_app_data', data); }
-        function getEvalData() { return JSON.parse(localStorage.getItem('pomodoro_eval_v3_data') || '{}'); }
-        function saveEvalData(data) { localStorage.setItem('pomodoro_eval_v3_data', JSON.stringify(data)); syncToCloud('pomodoro_eval_v3_data', data); }
-        const SYNC_CONFIG = {
-            apiKey: "YOUR_FIREBASE_API_KEY",
-            authDomain: "YOUR_FIREBASE_AUTH_DOMAIN",
-            databaseURL: "YOUR_FIREBASE_DATABASE_URL",
-            projectId: "YOUR_FIREBASE_PROJECT_ID",
-            storageBucket: "YOUR_FIREBASE_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_FIREBASE_MESSAGING_SENDER_ID",
-            appId: "YOUR_FIREBASE_APP_ID"
-        };
-        const SYNC_ID_KEY = 'pomodoro_sync_id';
-        let syncReady = false;
-        let syncRef = null;
-        function hasFirebaseConfig() { return !Object.values(SYNC_CONFIG).some(v => String(v).startsWith('YOUR_')); }
-        function getSyncId() {
-            let id = localStorage.getItem(SYNC_ID_KEY);
-            if (!id) { id = prompt('기기 간 동기화용 코드(같은 코드를 모든 기기에 입력하세요):') || ''; if (id) localStorage.setItem(SYNC_ID_KEY, id); }
-            return id;
-        }
-        async function initCloudSync() {
-            if (!hasFirebaseConfig()) return;
-            try {
-                if (!window.firebase) return;
-                if (!firebase.apps.length) firebase.initializeApp(SYNC_CONFIG);
-                const id = getSyncId();
-                if (!id) return;
-                await firebase.auth().signInAnonymously();
-                syncRef = firebase.database().ref('pomodoroUsers/' + encodeURIComponent(id));
-                syncReady = true;
-                syncRef.on('value', snap => {
-                    const remote = snap.val();
-                    if (!remote) return;
-                    if (remote.pomodoro_app_data) localStorage.setItem('pomodoro_app_data', JSON.stringify(remote.pomodoro_app_data));
-                    if (remote.pomodoro_eval_v3_data) localStorage.setItem('pomodoro_eval_v3_data', JSON.stringify(remote.pomodoro_eval_v3_data));
-                    updateViews();
-                    if (document.getElementById('app-eval').classList.contains('active')) renderEvaluations();
-                });
-            } catch (e) { console.warn('기기 동기화 초기화 실패:', e); }
-        }
-        function syncToCloud(key, value) {
-            if (syncReady && syncRef) syncRef.child(key).set(value).catch(console.warn);
-        }
         function getTodayKey() {
             const now = new Date();
             return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
@@ -486,27 +479,34 @@
             if (!data[dateKey]) { data[dateKey] = { pomo: 0, memos: [] }; }
             return data;
         }
-        function switchPage(pageId) {
+        async function switchPage(pageId) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById(pageId).classList.add('active');
             if (pageId === 'app-eval') {
-                renderEvaluations();
+                await renderEvaluations();
             }
         }
-        function openModal(id) { 
+        async function openModal(id) {
             document.getElementById(id).style.display = 'flex';
-            if (id === 'calendarModal') renderCalendar();
+            if (id === 'calendarModal') await renderCalendar();
         }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
         let timerInterval;
         let timeLeft = 25 * 60;
+        let timerRunning = false;
         function updateTimerDisplay() {
             const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
             const s = (timeLeft % 60).toString().padStart(2, '0');
             document.getElementById('timer').textContent = `${m}:${s}`;
         }
+        function setTimerStatus(text) {
+            document.getElementById('timerStatus').textContent = text;
+        }
         function startTimer() {
             if (timerInterval) return;
+            timerRunning = true;
+            setTimerStatus('집중 중...');
             timerInterval = setInterval(() => {
                 if (timeLeft > 0) {
                     timeLeft--;
@@ -514,47 +514,56 @@
                 } else {
                     clearInterval(timerInterval);
                     timerInterval = null;
-                    const today = getTodayKey();
-                    let data = getData();
-                    data = initDayData(data, today);
-                    data[today].pomo += 1;
-                    saveData(data);
-                    const selectedSubject = document.getElementById('pomoSubject').value;
-                    updateViews();
-                    alert(`[${selectedSubject}] 25분 뽀모도로 완료!`);
+                    timerRunning = false;
+                    (async () => {
+                        const today = getTodayKey();
+                        let data = await getData();
+                        data = initDayData(data, today);
+                        data[today].pomo += 1;
+                        await saveData(data);
+                        const selectedSubject = document.getElementById('pomoSubject').value;
+                        await updateViews();
+                        // 완료 후 바로 다음 25분을 위한 대기 모드로 복귀
+                        timeLeft = 25 * 60;
+                        updateTimerDisplay();
+                        setTimerStatus('25분 세팅 완료 - 시작 버튼을 누르면 다시 시작돼요');
+                        alert(`[${selectedSubject}] 25분 뽀모도로 완료! 🍅`);
+                    })();
                 }
             }, 1000);
         }
         function resetTimer() {
             clearInterval(timerInterval);
             timerInterval = null;
+            timerRunning = false;
             timeLeft = 25 * 60;
             updateTimerDisplay();
+            setTimerStatus('');
         }
-        function addWish() {
+        async function addWish() {
             const input = document.getElementById('wishInput');
             let text = input.value.trim();
             if (!text) return;
             const today = getTodayKey();
-            let data = getData();
+            let data = await getData();
             data = initDayData(data, today);
             data[today].memos.unshift(text);
-            saveData(data);
+            await saveData(data);
             input.value = '';
-            updateViews();
+            await updateViews();
         }
-        function deleteWish(index) {
+        async function deleteWish(index) {
             const today = getTodayKey();
-            let data = getData();
+            let data = await getData();
             if (data[today] && data[today].memos) {
                 data[today].memos.splice(index, 1);
-                saveData(data);
-                updateViews();
+                await saveData(data);
+                await updateViews();
             }
         }
-        function renderTodayMemos() {
+        async function renderTodayMemos() {
             const today = getTodayKey();
-            const data = getData();
+            const data = await getData();
             const todayData = data[today] || { pomo: 0, memos: [] };
             document.getElementById('todayPomo').textContent = todayData.pomo;
             const ul = document.getElementById('memoList');
@@ -570,8 +579,8 @@
             });
         }
         const TARGET_WORDS = ['야구', '노래', '유튜브', '게임'];
-        function showThiefRank() {
-            const data = getData();
+        async function showThiefRank() {
+            const data = await getData();
             const counts = { '야구': 0, '노래': 0, '유튜브': 0, '게임': 0 };
             Object.values(data).forEach(day => {
                 if (day.memos && Array.isArray(day.memos)) {
@@ -599,17 +608,17 @@
         }
         let currentDate = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
         let selectedDateKey = getTodayKey();
-        function changeMonth(delta) {
+        async function changeMonth(delta) {
             currentDate.setMonth(currentDate.getMonth() + delta);
-            renderCalendar();
+            await renderCalendar();
         }
-        function selectDate(dateStr) {
+        async function selectDate(dateStr) {
             selectedDateKey = dateStr;
-            renderCalendar();
-            renderDetail(dateStr);
+            await renderCalendar();
+            await renderDetail(dateStr);
         }
-        function renderDetail(dateStr) {
-            const data = getData();
+        async function renderDetail(dateStr) {
+            const data = await getData();
             const dayData = data[dateStr] || { pomo: 0, memos: [] };
             const detailBox = document.getElementById('detailBox');
             const detailTitle = document.getElementById('detailDate');
@@ -627,7 +636,7 @@
                 });
             }
         }
-        function renderCalendar() {
+        async function renderCalendar() {
             const month = currentDate.getMonth();
             document.getElementById('calendarMonth').textContent = `${currentDate.getFullYear()}년 ${month + 1}월`;
             const grid = document.getElementById('calendarGrid');
@@ -642,7 +651,7 @@
             const year = currentDate.getFullYear();
             const firstDay = new Date(year, month, 1).getDay();
             const lastDate = new Date(year, month + 1, 0).getDate();
-            const data = getData();
+            const data = await getData();
             for (let i = 0; i < firstDay; i++) {
                 const div = document.createElement('div');
                 div.className = 'day-cell empty';
@@ -673,23 +682,23 @@
             pickerCurrentDate.setMonth(pickerCurrentDate.getMonth() + delta);
             renderPickerCalendar();
         }
-        function selectPickerDate(dateStr) {
+        async function selectPickerDate(dateStr) {
             if (!pickerTargetKey) return;
-            const evalData = getEvalData();
+            const evalData = await getEvalData();
             if (!evalData[pickerTargetKey]) evalData[pickerTargetKey] = {};
             evalData[pickerTargetKey].date = dateStr;
-            saveEvalData(evalData);
+            await saveEvalData(evalData);
             closeModal('pickerModal');
-            renderEvaluations();
+            await renderEvaluations();
         }
-        function clearItemDate(subjectName, itemName) {
+        async function clearItemDate(subjectName, itemName) {
             if (confirm("설정된 날짜를 초기화하시겠습니까?")) {
                 const key = `${subjectName}_${itemName}`;
-                const evalData = getEvalData();
+                const evalData = await getEvalData();
                 if (evalData[key]) {
                     evalData[key].date = '';
-                    saveEvalData(evalData);
-                    renderEvaluations();
+                    await saveEvalData(evalData);
+                    await renderEvaluations();
                 }
             }
         }
@@ -722,25 +731,25 @@
                 grid.appendChild(div);
             }
         }
-        function toggleEvalCheck(subjectName, itemName) {
-            const evalData = getEvalData();
+        async function toggleEvalCheck(subjectName, itemName) {
+            const evalData = await getEvalData();
             const key = `${subjectName}_${itemName}`;
             if (!evalData[key]) evalData[key] = {};
             evalData[key].checked = !evalData[key].checked;
-            saveEvalData(evalData);
-            renderEvaluations();
+            await saveEvalData(evalData);
+            await renderEvaluations();
         }
-        function updateEvalDetail(subjectName, itemName, field, value) {
-            const evalData = getEvalData();
+        async function updateEvalDetail(subjectName, itemName, field, value) {
+            const evalData = await getEvalData();
             const key = `${subjectName}_${itemName}`;
             if (!evalData[key]) evalData[key] = {};
             evalData[key][field] = value;
-            saveEvalData(evalData);
+            await saveEvalData(evalData);
         }
-        function renderEvaluations() {
+        async function renderEvaluations() {
             const container = document.getElementById('evalContainer');
             container.innerHTML = '';
-            const evalData = getEvalData();
+            const evalData = await getEvalData();
             EVAL_SUBJECTS.forEach(sub => {
                 const card = document.createElement('div');
                 card.className = 'eval-subject-card';
@@ -816,15 +825,37 @@
                 container.appendChild(card);
             });
         }
-        function updateViews() {
-            renderTodayMemos();
-            renderCalendar();
+        async function updateViews() {
+            await renderTodayMemos();
+            await renderCalendar();
             if (document.getElementById('calendarModal').style.display === 'flex') {
-                renderDetail(selectedDateKey);
+                await renderDetail(selectedDateKey);
             }
         }
+
+        // 초기 로드
         updateViews();
-        initCloudSync();
+
+        // ── 다른 기기 동기화 ──
+        // window.storage는 로그인한 계정 기준으로 저장되므로, 다른 기기에서 저장한
+        // 내용도 아래처럼 주기적으로/화면 복귀 시 다시 불러오면 자동으로 반영됩니다.
+        // (실행 중인 타이머 자체는 각 기기별로 독립적으로 동작합니다.)
+        setInterval(async () => {
+            if (!timerRunning) {
+                await updateViews();
+                if (document.getElementById('app-eval').classList.contains('active')) {
+                    await renderEvaluations();
+                }
+            }
+        }, 20000);
+        document.addEventListener('visibilitychange', async () => {
+            if (!document.hidden) {
+                await updateViews();
+                if (document.getElementById('app-eval').classList.contains('active')) {
+                    await renderEvaluations();
+                }
+            }
+        });
     </script>
 </body>
 </html>
