@@ -412,35 +412,63 @@
         </div>
     </div>
     <script>
-        // ── 데이터 저장: Claude 계정 기반 영구 저장소(window.storage) 사용 ──
-        // shared=false(개인 저장소)로 저장하면 같은 계정으로 로그인한
-        // 다른 기기(휴대폰/PC 등)에서도 동일한 데이터를 그대로 불러올 수 있습니다.
-        async function getData() {
+        // ── 데이터 저장: 게시된 아티팩트의 db 캡ability 사용 ──
+        // 같은 조직(개인 계정) 안에서 로그인해 이 아티팩트를 열면
+        // 다른 기기에서도 실시간으로 같은 데이터가 반영됩니다.
+        let db = null;
+        let pomoRef = null;
+        let evalRef = null;
+
+        async function initDb() {
             try {
-                const result = await window.storage.get('pomodoro_app_data', false);
-                return result ? JSON.parse(result.value) : {};
+                db = await claude.use('db');
+            } catch (e) {
+                db = null;
+            }
+            if (db) {
+                pomoRef = db.doc('app/pomodoro');
+                evalRef = db.doc('app/eval');
+                // 다른 기기/탭에서 저장한 내용이 들어오면 실시간으로 화면 갱신
+                pomoRef.onSnapshot(() => { updateViews(); }, (err) => console.warn('동기화 오류(뽀모도로):', err));
+                evalRef.onSnapshot(() => {
+                    if (document.getElementById('app-eval').classList.contains('active')) {
+                        renderEvaluations();
+                    }
+                }, (err) => console.warn('동기화 오류(수행평가):', err));
+            } else {
+                setTimerStatus('⚠ 저장소를 사용할 수 없어요. 새로고침 후 다시 시도해 주세요.');
+            }
+        }
+        async function getData() {
+            if (!pomoRef) return {};
+            try {
+                const snap = await pomoRef.get();
+                return snap.exists ? (snap.data() || {}) : {};
             } catch (e) {
                 return {};
             }
         }
         async function saveData(data) {
+            if (!pomoRef) return;
             try {
-                await window.storage.set('pomodoro_app_data', JSON.stringify(data), false);
+                await pomoRef.set(data);
             } catch (e) {
                 console.error('저장 실패:', e);
             }
         }
         async function getEvalData() {
+            if (!evalRef) return {};
             try {
-                const result = await window.storage.get('pomodoro_eval_v3_data', false);
-                return result ? JSON.parse(result.value) : {};
+                const snap = await evalRef.get();
+                return snap.exists ? (snap.data() || {}) : {};
             } catch (e) {
                 return {};
             }
         }
         async function saveEvalData(data) {
+            if (!evalRef) return;
             try {
-                await window.storage.set('pomodoro_eval_v3_data', JSON.stringify(data), false);
+                await evalRef.set(data);
             } catch (e) {
                 console.error('저장 실패:', e);
             }
@@ -833,21 +861,13 @@
             }
         }
 
-        // 초기 로드
-        updateViews();
+        // 초기 로드: db 연결 후 화면을 그림 (이후 다른 기기 변경사항은 onSnapshot으로 실시간 반영)
+        (async () => {
+            await initDb();
+            await updateViews();
+        })();
 
-        // ── 다른 기기 동기화 ──
-        // window.storage는 로그인한 계정 기준으로 저장되므로, 다른 기기에서 저장한
-        // 내용도 아래처럼 주기적으로/화면 복귀 시 다시 불러오면 자동으로 반영됩니다.
-        // (실행 중인 타이머 자체는 각 기기별로 독립적으로 동작합니다.)
-        setInterval(async () => {
-            if (!timerRunning) {
-                await updateViews();
-                if (document.getElementById('app-eval').classList.contains('active')) {
-                    await renderEvaluations();
-                }
-            }
-        }, 20000);
+        // 화면으로 돌아왔을 때 한 번 더 최신 상태 확인 (보조용)
         document.addEventListener('visibilitychange', async () => {
             if (!document.hidden) {
                 await updateViews();
