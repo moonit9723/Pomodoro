@@ -411,64 +411,97 @@
             <ul class="rank-list" id="rankList"></ul>
         </div>
     </div>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
     <script>
-        // ── 데이터 저장: 게시된 아티팩트의 db 캡ability 사용 ──
-        // 같은 조직(개인 계정) 안에서 로그인해 이 아티팩트를 열면
-        // 다른 기기에서도 실시간으로 같은 데이터가 반영됩니다.
-        let db = null;
-        let pomoRef = null;
-        let evalRef = null;
+        // ── 데이터 저장: Firebase Realtime Database 사용 (깃허브 등 어디에 올려도 동작) ──
+        // 아래 SYNC_CONFIG에 본인의 Firebase 프로젝트 값을 채워 넣어야 합니다.
+        // (채우는 방법은 파일 맨 아래 안내 주석 참고)
+        const SYNC_CONFIG = {
+            apiKey: "YOUR_FIREBASE_API_KEY",
+            authDomain: "YOUR_FIREBASE_AUTH_DOMAIN",
+            databaseURL: "YOUR_FIREBASE_DATABASE_URL",
+            projectId: "YOUR_FIREBASE_PROJECT_ID",
+            storageBucket: "YOUR_FIREBASE_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_FIREBASE_MESSAGING_SENDER_ID",
+            appId: "YOUR_FIREBASE_APP_ID"
+        };
+        const SYNC_ID_KEY = 'pomodoro_sync_id';
+        let syncReady = false;
+        let baseRef = null;
 
-        async function initDb() {
-            try {
-                db = await claude.use('db');
-            } catch (e) {
-                db = null;
+        function hasFirebaseConfig() {
+            return !Object.values(SYNC_CONFIG).some(v => String(v).startsWith('YOUR_'));
+        }
+        function getSyncId() {
+            let id = localStorage.getItem(SYNC_ID_KEY);
+            if (!id) {
+                id = prompt('기기 간 동기화용 코드를 정해주세요.\n(같은 코드를 모든 기기에 입력하면 데이터가 공유됩니다)') || '';
+                if (id) localStorage.setItem(SYNC_ID_KEY, id);
             }
-            if (db) {
-                pomoRef = db.doc('app/pomodoro');
-                evalRef = db.doc('app/eval');
+            return id;
+        }
+        async function initCloudSync() {
+            if (!hasFirebaseConfig()) {
+                setTimerStatus('⚠ Firebase 설정이 안 되어 있어요 (코드 상단 SYNC_CONFIG 참고)');
+                return;
+            }
+            try {
+                if (!window.firebase) { setTimerStatus('⚠ Firebase 스크립트를 불러오지 못했어요.'); return; }
+                if (!firebase.apps.length) firebase.initializeApp(SYNC_CONFIG);
+                const id = getSyncId();
+                if (!id) { setTimerStatus('동기화 코드가 설정되지 않았어요.'); return; }
+                await firebase.auth().signInAnonymously();
+                baseRef = firebase.database().ref('pomodoroUsers/' + encodeURIComponent(id));
+                syncReady = true;
                 // 다른 기기/탭에서 저장한 내용이 들어오면 실시간으로 화면 갱신
-                pomoRef.onSnapshot(() => { updateViews(); }, (err) => console.warn('동기화 오류(뽀모도로):', err));
-                evalRef.onSnapshot(() => {
+                baseRef.child('pomodoro_app_data').on('value', () => { updateViews(); });
+                baseRef.child('pomodoro_eval_v3_data').on('value', () => {
                     if (document.getElementById('app-eval').classList.contains('active')) {
                         renderEvaluations();
                     }
-                }, (err) => console.warn('동기화 오류(수행평가):', err));
-            } else {
-                setTimerStatus('⚠ 저장소를 사용할 수 없어요. 새로고침 후 다시 시도해 주세요.');
+                });
+                // 창을 새로 열 때(또는 다른 기기에서) 저장된 종료 시각을 즉시 반영:
+                // 꺼져 있던 동안 시간이 다 지났으면 바로 완료 처리, 아직 남았으면 남은 시간부터 이어서 진행
+                baseRef.child('pomodoro_timer').on('value', (snap) => {
+                    applyRemoteTimerState(snap.val());
+                });
+            } catch (e) {
+                console.warn('동기화 초기화 실패:', e);
+                setTimerStatus('⚠ 동기화 연결에 실패했어요. (Firebase 설정/네트워크 확인)');
             }
         }
         async function getData() {
-            if (!pomoRef) return {};
+            if (!syncReady) return {};
             try {
-                const snap = await pomoRef.get();
-                return snap.exists ? (snap.data() || {}) : {};
+                const snap = await baseRef.child('pomodoro_app_data').once('value');
+                return snap.val() || {};
             } catch (e) {
                 return {};
             }
         }
         async function saveData(data) {
-            if (!pomoRef) return;
+            if (!syncReady) return;
             try {
-                await pomoRef.set(data);
+                await baseRef.child('pomodoro_app_data').set(data);
             } catch (e) {
                 console.error('저장 실패:', e);
             }
         }
         async function getEvalData() {
-            if (!evalRef) return {};
+            if (!syncReady) return {};
             try {
-                const snap = await evalRef.get();
-                return snap.exists ? (snap.data() || {}) : {};
+                const snap = await baseRef.child('pomodoro_eval_v3_data').once('value');
+                return snap.val() || {};
             } catch (e) {
                 return {};
             }
         }
         async function saveEvalData(data) {
-            if (!evalRef) return;
+            if (!syncReady) return;
             try {
-                await evalRef.set(data);
+                await baseRef.child('pomodoro_eval_v3_data').set(data);
             } catch (e) {
                 console.error('저장 실패:', e);
             }
@@ -520,9 +553,15 @@
         }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
-        let timerInterval;
+        // ── 타이머: '종료 시각(endAt)'을 db에 저장해두고 그 시각과 현재 시각을
+        // 비교해서 남은 시간을 계산합니다. 창을 닫았다가 나중에 다시 열어도,
+        // 혹은 다른 기기에서 열어도 실제로 흐른 시간만큼 정확히 반영됩니다. ──
         let timeLeft = 25 * 60;
-        let timerRunning = false;
+        let timerEndAt = null;       // 종료 예정 시각 (ms epoch) 또는 null
+        let timerSubjectAtStart = null;
+        let localTickInterval = null; // 화면 숫자만 1초마다 갱신하는 타이머(진짜 시간 기준은 timerEndAt)
+        let completing = false;      // 완료 처리 중복 방지
+
         function updateTimerDisplay() {
             const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
             const s = (timeLeft % 60).toString().padStart(2, '0');
@@ -531,42 +570,100 @@
         function setTimerStatus(text) {
             document.getElementById('timerStatus').textContent = text;
         }
-        function startTimer() {
-            if (timerInterval) return;
-            timerRunning = true;
-            setTimerStatus('집중 중...');
-            timerInterval = setInterval(() => {
-                if (timeLeft > 0) {
-                    timeLeft--;
-                    updateTimerDisplay();
-                } else {
-                    clearInterval(timerInterval);
-                    timerInterval = null;
-                    timerRunning = false;
-                    (async () => {
-                        const today = getTodayKey();
-                        let data = await getData();
-                        data = initDayData(data, today);
-                        data[today].pomo += 1;
-                        await saveData(data);
-                        const selectedSubject = document.getElementById('pomoSubject').value;
-                        await updateViews();
-                        // 완료 후 바로 다음 25분을 위한 대기 모드로 복귀
-                        timeLeft = 25 * 60;
-                        updateTimerDisplay();
-                        setTimerStatus('25분 세팅 완료 - 시작 버튼을 누르면 다시 시작돼요');
-                        alert(`[${selectedSubject}] 25분 뽀모도로 완료! 🍅`);
-                    })();
-                }
-            }, 1000);
+        function startLocalTick() {
+            if (localTickInterval) return;
+            localTickInterval = setInterval(tick, 1000);
+            tick();
         }
-        function resetTimer() {
-            clearInterval(timerInterval);
-            timerInterval = null;
-            timerRunning = false;
+        function stopLocalTick() {
+            clearInterval(localTickInterval);
+            localTickInterval = null;
+        }
+        function tick() {
+            if (timerEndAt == null) return;
+            const remaining = Math.round((timerEndAt - Date.now()) / 1000);
+            if (remaining > 0) {
+                timeLeft = remaining;
+                updateTimerDisplay();
+            } else {
+                timeLeft = 0;
+                updateTimerDisplay();
+                handleTimerComplete();
+            }
+        }
+        async function handleTimerComplete() {
+            if (completing) return;
+            completing = true;
+            stopLocalTick();
+            const subject = timerSubjectAtStart || document.getElementById('pomoSubject').value;
+            const today = getTodayKey();
+            let data = await getData();
+            data = initDayData(data, today);
+            data[today].pomo += 1;
+            await saveData(data);
+            await updateViews();
+            timerEndAt = null;
+            timerSubjectAtStart = null;
+            timeLeft = 25 * 60;
+            updateTimerDisplay();
+            setTimerStatus('25분 세팅 완료 - 시작 버튼을 누르면 다시 시작돼요');
+            if (syncReady) {
+                try { await baseRef.child('pomodoro_timer').set({ endAt: null, subject: null }); } catch (e) {}
+            }
+            alert(`[${subject}] 25분 뽀모도로 완료! 🍅`);
+            completing = false;
+        }
+        async function startTimer() {
+            if (timerEndAt != null) return; // 이미 진행 중
+            const subject = document.getElementById('pomoSubject').value;
+            timerSubjectAtStart = subject;
+            timerEndAt = Date.now() + timeLeft * 1000;
+            setTimerStatus('집중 중... (창을 닫아도 시간은 계속 흘러요)');
+            startLocalTick();
+            if (syncReady) {
+                try { await baseRef.child('pomodoro_timer').set({ endAt: timerEndAt, subject }); } catch (e) { console.error('타이머 저장 실패:', e); }
+            }
+        }
+        async function resetTimer() {
+            stopLocalTick();
+            timerEndAt = null;
+            timerSubjectAtStart = null;
             timeLeft = 25 * 60;
             updateTimerDisplay();
             setTimerStatus('');
+            if (syncReady) {
+                try { await baseRef.child('pomodoro_timer').set({ endAt: null, subject: null }); } catch (e) {}
+            }
+        }
+        // 다른 기기에서의 변경, 혹은 페이지를 새로 열 때 저장된 종료 시각을 반영
+        function applyRemoteTimerState(remote) {
+            if (completing) return;
+            const remoteEndAt = (remote && remote.endAt) ? remote.endAt : null;
+            if (remoteEndAt === timerEndAt) return;
+            timerEndAt = remoteEndAt;
+            timerSubjectAtStart = remote ? (remote.subject || null) : null;
+            if (timerEndAt != null) {
+                if (timerSubjectAtStart) {
+                    const sel = document.getElementById('pomoSubject');
+                    if (sel) sel.value = timerSubjectAtStart;
+                }
+                const remaining = Math.round((timerEndAt - Date.now()) / 1000);
+                if (remaining > 0) {
+                    timeLeft = remaining;
+                    updateTimerDisplay();
+                    setTimerStatus('집중 중... (창을 닫아도 시간은 계속 흘러요)');
+                    startLocalTick();
+                } else {
+                    timeLeft = 0;
+                    updateTimerDisplay();
+                    handleTimerComplete();
+                }
+            } else {
+                stopLocalTick();
+                timeLeft = 25 * 60;
+                updateTimerDisplay();
+                setTimerStatus('');
+            }
         }
         async function addWish() {
             const input = document.getElementById('wishInput');
@@ -863,7 +960,7 @@
 
         // 초기 로드: db 연결 후 화면을 그림 (이후 다른 기기 변경사항은 onSnapshot으로 실시간 반영)
         (async () => {
-            await initDb();
+            await initCloudSync();
             await updateViews();
         })();
 
