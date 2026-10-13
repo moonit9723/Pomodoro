@@ -256,6 +256,13 @@
         .task-when { font-size: 0.72rem; color: #00f3ff; font-weight: 700; }
         .task-text { font-size: 0.85rem; color: #e2e8f0; word-break: break-word; }
         .task-empty { text-align: center; color: #64748b; font-size: 0.82rem; padding: 14px 0; }
+        .check-list { list-style: none; padding: 0; margin: 0 0 10px; display: flex; flex-direction: column; gap: 8px; }
+        .check-item { background: #080c10; border: 1px solid #1e293b; border-radius: 8px; padding: 8px 10px; }
+        .check-item.bad { border-color: #5b2a35; }
+        .check-label { font-size: 0.85rem; font-weight: 700; color: #e2e8f0; }
+        .check-detail { font-size: 0.75rem; color: #94a3b8; margin-top: 3px; word-break: break-word; }
+        .btn-recheck { width: 100%; background: transparent; color: #00f3ff; border: 1px solid #00f3ff; padding: 7px; font-size: 0.8rem; font-weight: 700; border-radius: 6px; cursor: pointer; }
+        .btn-recheck:hover { background: #00f3ff; color: #080c10; }
     </style>
 </head>
 <body>
@@ -279,6 +286,7 @@
                 <div class="timer-status" id="timerStatus"></div>
                 <button class="btn-start" onclick="startTimer()">시작</button>
                 <button class="btn-thief" onclick="showThiefRank()">내 집중력 도둑은? 🔍</button>
+                <button class="btn-thief" onclick="runCheck()">기록 저장 확인 🔧</button>
             </div>
             <div class="card memo-section">
                 <div class="input-box">
@@ -342,6 +350,14 @@
             <button class="modal-close" onclick="closeModal('thiefModal')">✕</button>
             <div class="thief-title">내 집중력 도둑 순위 🏆</div>
             <ul class="rank-list" id="rankList"></ul>
+        </div>
+    </div>
+    <div class="modal-overlay" id="checkModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('checkModal')">✕</button>
+            <div class="thief-title">기록 저장 확인 🔧</div>
+            <ul class="check-list" id="checkList"></ul>
+            <button class="btn-recheck" onclick="runCheck()">다시 확인</button>
         </div>
     </div>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -837,6 +853,79 @@
                 li.appendChild(del);
                 ul.appendChild(li);
             });
+        }
+
+        // ── 기록 저장 확인 ──
+        function withTimeout(promise, ms) {
+            return Promise.race([
+                promise,
+                new Promise((_, reject) => setTimeout(() => reject(new Error('서버 응답 없음 (인터넷 연결 확인)')), ms))
+            ]);
+        }
+        async function runCheck() {
+            const list = document.getElementById('checkList');
+            list.innerHTML = '';
+            openModal('checkModal');
+            const add = (ok, label, detail) => {
+                const li = document.createElement('li');
+                li.className = 'check-item' + (ok ? '' : ' bad');
+                const head = document.createElement('div');
+                head.className = 'check-label';
+                head.textContent = (ok ? '✅ ' : '❌ ') + label;
+                li.appendChild(head);
+                if (detail) {
+                    const d = document.createElement('div');
+                    d.className = 'check-detail';
+                    d.textContent = detail;
+                    li.appendChild(d);
+                }
+                list.appendChild(li);
+            };
+
+            // 1) 저장소 연결
+            if (!syncReady) {
+                add(false, '저장소 연결', '연결되지 않았어요. ' + (document.getElementById('timerStatus').textContent || '페이지를 새로고침하고 동기화 코드를 확인하세요.'));
+                return;
+            }
+            add(true, '저장소 연결', '동기화 코드: ' + (localStorage.getItem(SYNC_ID_KEY) || '-'));
+
+            // 2) 실제로 쓰고 다시 읽어 보기 (기록용 데이터에는 영향 없음)
+            try {
+                const stamp = Date.now();
+                const ref = baseRef.child('pomodoro_check');
+                await withTimeout(ref.set({ t: stamp }), 8000);
+                const snap = await withTimeout(ref.once('value'), 8000);
+                const back = snap.val();
+                await withTimeout(ref.remove(), 8000);
+                if (back && back.t === stamp) add(true, '저장·불러오기 테스트', '정상적으로 저장되고 다시 읽혀요.');
+                else add(false, '저장·불러오기 테스트', '저장은 했는데 읽은 값이 달라요.');
+            } catch (e) {
+                add(false, '저장·불러오기 테스트', '실패: ' + ((e && (e.code || e.message)) || e) + ' (Firebase 규칙/권한을 확인하세요)');
+                return;
+            }
+
+            // 3) 완료한 뽀모도로 기록
+            const data = await getData();
+            const todayData = data[getTodayKey()] || { pomo: 0, sessions: [] };
+            const byStart = (a, b) => String(a.start).localeCompare(String(b.start));
+            const todaySessions = todayData.sessions.slice().sort(byStart);
+            if (todaySessions.length > 0) {
+                const last = todaySessions[todaySessions.length - 1];
+                add(true, `오늘 완료한 뽀모도로: ${todayData.pomo}회`, `마지막 기록: ${last.start} ~ ${last.end} · ${last.subject || '과목 미지정'}`);
+            } else {
+                const keys = Object.keys(data).filter(k => data[k].sessions.length > 0).sort();
+                if (keys.length > 0) {
+                    const k = keys[keys.length - 1];
+                    const last = data[k].sessions.slice().sort(byStart).pop();
+                    add(true, `오늘 완료한 뽀모도로: ${todayData.pomo}회`, `오늘은 아직 없어요. 가장 최근 기록: ${formatNoYear(k)} ${last.start} ~ ${last.end} · ${last.subject || '과목 미지정'}`);
+                } else {
+                    add(true, `오늘 완료한 뽀모도로: ${todayData.pomo}회`, '시간이 남은 기록은 아직 없어요. 25분을 한 번 완료하면 여기에 나타나요.');
+                }
+            }
+
+            // 4) 타이머 상태
+            if (timerEndAt != null) add(true, '타이머', `진행 중 · 약 ${Math.ceil(timeLeft / 60)}분 남음 (끝나면 자동으로 기록돼요)`);
+            else add(true, '타이머', '대기 중 (시작 버튼을 눌러야 기록 대상이 돼요)');
         }
 
         async function updateViews() {
