@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>포모도로 타이머 & 할 일 기록</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#080c10">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="포모도로">
+    <link rel="icon" type="image/png" href="icon-192.png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #080c10;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px 10px;
+            padding: calc(20px + env(safe-area-inset-top)) calc(10px + env(safe-area-inset-right)) calc(20px + env(safe-area-inset-bottom)) calc(10px + env(safe-area-inset-left));
+            margin: 0;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 400px;
+            width: 100%;
+        }
+        .page {
+            display: none;
+            width: 100%;
+            max-width: 420px;
+            flex-direction: column;
+            align-items: center;
+        }
+        .page.active { display: flex; }
+        .card {
+            background: #0f171e;
+            padding: 16px;
+            border-radius: 14px;
+            border: 1px solid #00f3ff;
+            box-shadow: 0 0 12px rgba(0, 243, 255, 0.12);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            width: 100%;
+        }
+        .top-bar {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+        .icon-btn {
+            background: none;
+            border: none;
+            color: #00f3ff;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 4px;
+            transition: transform 0.2s;
+        }
+        .icon-btn:hover { transform: scale(1.15); }
+        .pomo-count-text { font-size: 0.82rem; color: #94a3b8; }
+        .count-num { color: #00f3ff; font-weight: 700; }
+        .subject-select {
+            width: 100%;
+            padding: 6px 10px;
+            background-color: #080c10;
+            border: 1px solid #00f3ff;
+            color: #00f3ff;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            outline: none;
+        }
+        .timer-display {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: #00f3ff;
+            text-shadow: 0 0 15px rgba(0, 243, 255, 0.5);
+            margin: 2px 0 10px 0;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 1px;
+        }
+        .timer-status {
+            font-size: 0.78rem;
+            color: #64748b;
+            margin-top: -6px;
+            margin-bottom: 8px;
+            min-height: 14px;
+        }
+        .btn-start {
+            width: 100%;
+            background-color: transparent;
+            color: #00f3ff;
+            border: 1.5px solid #00f3ff;
+            padding: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(0, 243, 255, 0.15);
+            transition: all 0.2s ease;
+        }
+        .btn-start:hover {
+            background-color: #00f3ff;
+            color: #080c10;
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.5);
+        }
+        .btn-reset-small {
+            width: 100%;
+            margin-top: 8px;
+            background-color: transparent;
+            color: #ff4d4d;
+            border: 1px solid #3a1e28;
+            padding: 5px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-reset-small:hover {
+            background-color: #ff4d4d;
+            color: #ffffff;
+            border-color: #ff4d4d;
+        }
+        .btn-thief {
+            width: 100%;
+            margin-top: 10px;
+            background-color: #14222e;
+            border: 1px dashed #00f3ff;
+            color: #00f3ff;
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .btn-thief:hover { background-color: #1a2d3d; }
+        .memo-section { align-items: stretch; padding: 14px; margin-top: 12px; }
+        .input-box { display: flex; gap: 8px; margin-bottom: 8px; }
+        .input-box input {
+            flex: 1;
+            padding: 8px 10px;
+            background-color: #080c10;
+            border: 1px solid #1e293b;
+            color: #ffffff;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            outline: none;
+        }
+        .input-box input:focus { border-color: #00f3ff; }
+        .btn-add { flex: 0 0 55px; padding: 8px; background: none; border: 1px solid #00f3ff; color: #00f3ff; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .memo-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-height: 110px;
+            overflow-y: auto;
+        }
+        .memo-item {
+            background-color: #080c10;
+            border: 1px solid #1e293b;
+            padding: 6px 10px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.82rem;
+            color: #e2e8f0;
+        }
+        .btn-del { background: none; border: none; color: #475569; cursor: pointer; font-size: 0.8rem; }
+        .btn-del:hover { color: #ff3366; }
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(3px);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: #0f171e;
+            border: 1px solid #00f3ff;
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
+            border-radius: 14px;
+            padding: 16px;
+            width: 90%;
+            max-width: 380px;
+            max-height: 85vh;
+            padding-top: 20px;
+            overflow-y: auto;
+            position: relative;
+        }
+        .modal-close {
+            position: absolute;
+            top: 6px; right: 8px;
+            z-index: 20;
+            background: none; border: none;
+            color: #94a3b8; font-size: 1.1rem; cursor: pointer;
+        }
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-right: 34px; gap: 8px; }
+        .calendar-title { font-size: 0.88rem; font-weight: 700; color: #00f3ff; }
+        .calendar-nav { background: none; border: none; color: #94a3b8; cursor: pointer; position: relative; z-index: 21; min-width: 30px; min-height: 30px; padding: 4px 8px; touch-action: manipulation; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; text-align: center; font-size: 0.7rem; }
+        .day-name { color: #64748b; font-weight: 600; padding-bottom: 2px; }
+        .day-cell {
+            background-color: #080c10; border: 1px solid #1e293b; border-radius: 4px;
+            padding: 3px 1px; min-height: 38px; display: flex; flex-direction: column;
+            justify-content: space-between; align-items: center; cursor: pointer;
+        }
+        .day-cell.empty { border: none; background: none; cursor: default; }
+        .day-cell.selected { border-color: #00f3ff; background-color: #1a2a3a; }
+        .pomo-badge { font-size: 0.6rem; color: #00f3ff; font-weight: 700; }
+        .detail-box { margin-top: 8px; padding-top: 8px; border-top: 1px solid #1e293b; font-size: 0.8rem; }
+        .detail-title { color: #00f3ff; font-weight: 700; margin-bottom: 4px; }
+        .detail-list { list-style: square; padding-left: 14px; margin: 0; color: #cbd5e1; }
+        .thief-title { font-size: 0.95rem; font-weight: 700; color: #00f3ff; margin-bottom: 12px; text-align: center; }
+        .rank-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+        .rank-item {
+            display: flex; justify-content: space-between; align-items: center;
+            background: #080c10; border: 1px solid #1e293b; padding: 8px 12px; border-radius: 6px; font-size: 0.85rem;
+        }
+        .rank-num { font-weight: 800; color: #00f3ff; width: 20px; }
+        .rank-word { flex: 1; margin-left: 8px; }
+        .rank-count { font-weight: 700; color: #94a3b8; }
+
+        .detail-sub { color: #94a3b8; font-size: 0.72rem; font-weight: 700; margin: 8px 0 3px; }
+        .detail-list li { margin-bottom: 2px; }
+        .session-time { color: #00f3ff; font-weight: 700; font-variant-numeric: tabular-nums; }
+        .page-header { width: 100%; display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 8px; }
+        .btn-back { background: none; border: 1px solid #00f3ff; color: #00f3ff; padding: 6px 12px; border-radius: 6px; font-size: 0.82rem; font-weight: 700; cursor: pointer; }
+        .btn-back:hover { background: #00f3ff; color: #080c10; }
+        .page-title { font-size: 1.05rem; font-weight: 800; color: #00f3ff; }
+        .task-form { width: 100%; display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; background: #080c10; border: 1px solid #1e293b; border-radius: 10px; padding: 10px; }
+        .task-form-row { display: flex; gap: 6px; }
+        .task-input, .task-select { background: #0f171e; border: 1px solid #1e293b; color: #ffffff; border-radius: 6px; padding: 7px 8px; font-size: 0.85rem; outline: none; color-scheme: dark; }
+        .task-input { flex: 1; min-width: 0; }
+        .task-input:focus, .task-select:focus { border-color: #00f3ff; }
+        .task-list { width: 100%; list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+        .task-item { display: flex; align-items: center; gap: 8px; background: #080c10; border: 1px solid #1e293b; border-radius: 8px; padding: 8px 10px; }
+        .task-item.overdue { border-color: #5b2a35; }
+        .task-item.done .task-text { text-decoration: line-through; color: #64748b; }
+        .task-item.done .task-when { color: #64748b; }
+        .task-check { accent-color: #00f3ff; cursor: pointer; flex: 0 0 auto; }
+        .task-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+        .task-when { font-size: 0.72rem; color: #00f3ff; font-weight: 700; }
+        .task-text { font-size: 0.85rem; color: #e2e8f0; word-break: break-word; }
+        .task-empty { text-align: center; color: #64748b; font-size: 0.82rem; padding: 14px 0; }
+        .check-list { list-style: none; padding: 0; margin: 0 0 10px; display: flex; flex-direction: column; gap: 8px; }
+        .check-item { background: #080c10; border: 1px solid #1e293b; border-radius: 8px; padding: 8px 10px; }
+        .check-item.bad { border-color: #5b2a35; }
+        .check-label { font-size: 0.85rem; font-weight: 700; color: #e2e8f0; }
+        .check-detail { font-size: 0.75rem; color: #94a3b8; margin-top: 3px; word-break: break-word; }
+        .btn-recheck { width: 100%; background: transparent; color: #00f3ff; border: 1px solid #00f3ff; padding: 7px; font-size: 0.8rem; font-weight: 700; border-radius: 6px; cursor: pointer; }
+        .btn-recheck:hover { background: #00f3ff; color: #080c10; }
+        .upcoming-card { width: 100%; background: #0f171e; border: 1px solid #1e4a55; border-radius: 14px; padding: 10px 12px; }
+        .upcoming-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .upcoming-title { font-size: 0.82rem; font-weight: 800; color: #00f3ff; }
+        .upcoming-more { background: none; border: none; color: #94a3b8; font-size: 0.72rem; cursor: pointer; padding: 2px 0; }
+        .upcoming-more:hover { color: #00f3ff; }
+        .upcoming-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 5px; }
+        .upcoming-item { display: flex; align-items: center; gap: 8px; background: #080c10; border: 1px solid #1e293b; border-radius: 8px; padding: 6px 9px; }
+        .upcoming-item.soon { border-color: #6b4a1e; }
+        .upcoming-item.overdue { border-color: #5b2a35; }
+        .upcoming-check { accent-color: #00f3ff; cursor: pointer; flex: 0 0 auto; }
+        .upcoming-body { flex: 1; min-width: 0; }
+        .upcoming-when { font-size: 0.7rem; font-weight: 700; color: #00f3ff; }
+        .upcoming-item.soon .upcoming-when { color: #ffb347; }
+        .upcoming-item.overdue .upcoming-when { color: #ff6b6b; }
+        .upcoming-text { font-size: 0.82rem; color: #e2e8f0; word-break: break-word; }
+        .btn-install { width: 100%; background: transparent; border: 1px dashed #1e4a55; color: #94a3b8; padding: 8px; border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
+        .btn-install:hover { color: #00f3ff; border-color: #00f3ff; }
+    </style>
+</head>
+<body>
+    <div id="app-timer" class="page active">
+        <div class="container">
+            <div class="upcoming-card" id="upcomingBox" style="display: none;">
+                <div class="upcoming-head">
+                    <div class="upcoming-title">⏰ 임박한 할 일</div>
+                    <button class="upcoming-more" onclick="switchPage('app-tasks')">전체 보기 ›</button>
+                </div>
+                <ul class="upcoming-list" id="upcomingList"></ul>
+            </div>
+            <div class="card">
+                <div class="top-bar">
+                    <button class="icon-btn" onclick="openModal('calendarModal')" title="달력 보기">📅</button>
+                    <div class="pomo-count-text">오늘 성공: <span class="count-num" id="todayPomo">0</span>회</div>
+                    <button class="icon-btn" onclick="switchPage('app-tasks')" title="할 일 기록">📝</button>
+                </div>
+                <select id="pomoSubject" class="subject-select">
+                    <option value="독서와 작문">독서와 작문</option>
+                    <option value="영어II">영어II</option>
+                    <option value="미적분I">미적분I</option>
+                    <option value="확률과 통계">확률과 통계</option>
+                    <option value="생명과학">생명과학</option>
+                    <option value="기타">기타</option>
+                </select>
+                <div class="timer-display" id="timer">25:00</div>
+                <div class="timer-status" id="timerStatus"></div>
+                <button class="btn-start" onclick="startTimer()">시작</button>
+                <button class="btn-thief" onclick="showThiefRank()">내 집중력 도둑은? 🔍</button>
+                <button class="btn-thief" onclick="runCheck()">기록 저장 확인 🔧</button>
+            </div>
+            <div class="card memo-section">
+                <div class="input-box">
+                    <input type="text" id="wishInput" placeholder="딴생각 적기..." onkeypress="if(event.key==='Enter') addWish()">
+                    <button class="btn-add" onclick="addWish()">적기</button>
+                </div>
+                <ul class="memo-list" id="memoList"></ul>
+                <button class="btn-reset-small" onclick="resetTimer()">초기화</button>
+            </div>
+            <button class="btn-install" id="installBtn" style="display: none;" onclick="installApp()">📲 앱으로 설치</button>
+        </div>
+    </div>
+
+    <div id="app-tasks" class="page">
+        <div class="card">
+            <div class="page-header">
+                <button class="btn-back" onclick="switchPage('app-timer')">← 타이머로 돌아가기</button>
+                <div class="page-title">할 일 기록 📝</div>
+            </div>
+            <div class="task-form">
+                <div class="task-form-row">
+                    <input type="date" id="taskDate" class="task-input">
+                    <select id="taskPeriod" class="task-select">
+                        <option value="1">1교시</option>
+                        <option value="2">2교시</option>
+                        <option value="3">3교시</option>
+                        <option value="4">4교시</option>
+                        <option value="5">5교시</option>
+                        <option value="6">6교시</option>
+                        <option value="7">7교시</option>
+                    </select>
+                    <span style="align-self:center;font-size:0.8rem;color:#94a3b8;">까지</span>
+                </div>
+                <div class="task-form-row">
+                    <input type="text" id="taskText" class="task-input" placeholder="무엇을 할지 적기 (예: 영어 노트 제출)" onkeypress="if(event.key==='Enter') addTask()">
+                    <button class="btn-add" onclick="addTask()">추가</button>
+                </div>
+            </div>
+            <ul class="task-list" id="taskList"></ul>
+        </div>
+    </div>
+    <div class="modal-overlay" id="calendarModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('calendarModal')">✕</button>
+            <div class="calendar-header">
+                <button class="calendar-nav" onclick="changeMonth(-1)">❮</button>
+                <div class="calendar-title" id="calendarMonth"></div>
+                <button class="calendar-nav" onclick="changeMonth(1)">❯</button>
+            </div>
+            <div class="calendar-grid" id="calendarGrid"></div>
+            <div class="detail-box" id="detailBox" style="display: none;">
+                <div class="detail-title" id="detailDate"></div>
+                <div class="detail-sub">공부 기록</div>
+                <ul class="detail-list" id="sessionList"></ul>
+                <div class="detail-sub">딴생각 메모</div>
+                <ul class="detail-list" id="detailList"></ul>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="thiefModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('thiefModal')">✕</button>
+            <div class="thief-title">내 집중력 도둑 순위 🏆</div>
+            <ul class="rank-list" id="rankList"></ul>
+        </div>
+    </div>
+    <div class="modal-overlay" id="checkModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('checkModal')">✕</button>
+            <div class="thief-title">기록 저장 확인 🔧</div>
+            <ul class="check-list" id="checkList"></ul>
+            <button class="btn-recheck" onclick="runCheck()">다시 확인</button>
+        </div>
+    </div>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+    <script>
+
+        // ── 데이터 저장: Firebase Realtime Database (어느 기기에서 열어도 같은 데이터) ──
+        const SYNC_CONFIG = {
+            apiKey: "AIzaSyDpvnO3YUB2KyHVuNQSt6JoBxH9GBQYNB4",
+            authDomain: "pomodoro-app-763ce.firebaseapp.com",
+            databaseURL: "https://pomodoro-app-763ce-default-rtdb.firebaseio.com",
+            projectId: "pomodoro-app-763ce",
+            storageBucket: "pomodoro-app-763ce.firebasestorage.app",
+            messagingSenderId: "818555826060",
+            appId: "1:818555826060:web:3a42770c6c440ccea830a9"
+        };
+        const SYNC_ID_KEY = 'pomodoro_sync_id';
+        let syncReady = false;
+        let baseRef = null;
+
+        function hasFirebaseConfig() {
+            return !Object.values(SYNC_CONFIG).some(v => String(v).startsWith('YOUR_'));
+        }
+        function getSyncId() {
+            let id = localStorage.getItem(SYNC_ID_KEY);
+            if (!id) {
+                id = prompt('기기 간 동기화용 코드를 정해주세요.\n(같은 코드를 모든 기기에 입력하면 데이터가 공유됩니다)') || '';
+                if (id) localStorage.setItem(SYNC_ID_KEY, id);
+            }
+            return id;
+        }
+        async function initCloudSync() {
+            if (!hasFirebaseConfig()) {
+                setTimerStatus('⚠ Firebase 설정이 안 되어 있어요 (코드 상단 SYNC_CONFIG 참고)');
+                return;
+            }
+            try {
+                if (!window.firebase) { setTimerStatus('⚠ Firebase 스크립트를 불러오지 못했어요.'); return; }
+                if (!firebase.apps.length) firebase.initializeApp(SYNC_CONFIG);
+                const id = getSyncId();
+                if (!id) { setTimerStatus('동기화 코드가 설정되지 않았어요.'); return; }
+                await firebase.auth().signInAnonymously();
+                baseRef = firebase.database().ref('pomodoroUsers/' + encodeURIComponent(id));
+                syncReady = true;
+                // 다른 기기에서 바뀐 내용이 들어오면 실시간으로 화면 갱신
+                baseRef.child('pomodoro_app_data').on('value', () => { updateViews(); });
+                baseRef.child('pomodoro_tasks').on('value', (snap) => {
+                    tasksCache = snap.val() || {};
+                    renderTasks();
+                    renderUpcoming();
+                });
+                // 창을 새로 열 때(또는 다른 기기에서) 저장된 종료 시각을 즉시 반영
+                baseRef.child('pomodoro_timer').on('value', (snap) => {
+                    applyRemoteTimerState(snap.val());
+                });
+            } catch (e) {
+                console.warn('동기화 초기화 실패:', e);
+                setTimerStatus('⚠ 동기화 연결에 실패했어요. (Firebase 설정/네트워크 확인)');
+            }
+        }
+
+        // ── 날짜/시간 도우미 ──
+        const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
+        function pad2(n) { return String(n).padStart(2, '0'); }
+        function dateKeyOf(d) { return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`; }
+        function getTodayKey() { return dateKeyOf(new Date()); }
+        function hhmm(d) { return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`; }
+        function formatNoYear(dateStr) {
+            if (!dateStr) return '';
+            const parts = dateStr.split('-');
+            if (parts.length === 3) return `${parseInt(parts[1])}월 ${parseInt(parts[2])}일`;
+            return dateStr;
+        }
+
+        // ── 공부/메모 데이터 ──
+        // Firebase는 빈 배열을 저장하지 않아서(읽으면 사라짐) 읽을 때마다 형태를 보정합니다.
+        function toArray(v) {
+            if (Array.isArray(v)) return v.filter(x => x != null);
+            if (v && typeof v === 'object') return Object.keys(v).sort((a, b) => a - b).map(k => v[k]);
+            return [];
+        }
+        function normalizeData(raw) {
+            const data = (raw && typeof raw === 'object') ? raw : {};
+            Object.keys(data).forEach(k => {
+                const d = data[k];
+                if (!d || typeof d !== 'object') { delete data[k]; return; }
+                if (typeof d.pomo !== 'number') d.pomo = 0;
+                d.memos = toArray(d.memos);
+                d.sessions = toArray(d.sessions);
+            });
+            return data;
+        }
+        function initDayData(data, dateKey) {
+            if (!data[dateKey]) data[dateKey] = {};
+            const d = data[dateKey];
+            if (typeof d.pomo !== 'number') d.pomo = 0;
+            if (!Array.isArray(d.memos)) d.memos = [];
+            if (!Array.isArray(d.sessions)) d.sessions = [];
+            return data;
+        }
+        async function getData() {
+            if (!syncReady) return {};
+            try {
+                const snap = await baseRef.child('pomodoro_app_data').once('value');
+                return normalizeData(snap.val());
+            } catch (e) {
+                return {};
+            }
+        }
+        async function saveData(data) {
+            if (!syncReady) return;
+            try {
+                await baseRef.child('pomodoro_app_data').set(data);
+            } catch (e) {
+                console.error('저장 실패:', e);
+            }
+        }
+
+        async function switchPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            if (pageId === 'app-tasks') renderTasks();
+        }
+        async function openModal(id) {
+            document.getElementById(id).style.display = 'flex';
+            if (id === 'calendarModal') {
+                await renderCalendar();
+                await renderDetail(selectedDateKey);
+            }
+        }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+        // ── 타이머: '종료 시각(endAt)'을 db에 저장해두고 현재 시각과 비교해 남은 시간을 계산 ──
+        const FOCUS_MS = 25 * 60 * 1000;
+        let timeLeft = 25 * 60;
+        let timerEndAt = null;
+        let timerSubjectAtStart = null;
+        let localTickInterval = null;
+        let completing = false;
+
+        function updateTimerDisplay() {
+            const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+            const s = (timeLeft % 60).toString().padStart(2, '0');
+            document.getElementById('timer').textContent = `${m}:${s}`;
+        }
+        function setTimerStatus(text) {
+            document.getElementById('timerStatus').textContent = text;
+        }
+        function startLocalTick() {
+            if (localTickInterval) return;
+            localTickInterval = setInterval(tick, 1000);
+            tick();
+        }
+        function stopLocalTick() {
+            clearInterval(localTickInterval);
+            localTickInterval = null;
+        }
+        function tick() {
+            if (timerEndAt == null) return;
+            const remaining = Math.round((timerEndAt - Date.now()) / 1000);
+            if (remaining > 0) {
+                timeLeft = remaining;
+                updateTimerDisplay();
+            } else {
+                timeLeft = 0;
+                updateTimerDisplay();
+                handleTimerComplete();
+            }
+        }
+        // 여러 기기가 동시에 열려 있어도 완료 기록은 한 번만 남기도록 '먼저 가져간 기기'만 처리
+        async function claimCompletion(endAtMs) {
+            if (!syncReady) return true;
+            try {
+                const res = await baseRef.child('pomodoro_timer').transaction((cur) => {
+                    if (cur && cur.endAt === endAtMs) return null;
+                    return undefined;
+                });
+                return !!res.committed;
+            } catch (e) {
+                return true;
+            }
+        }
+        async function handleTimerComplete() {
+            if (completing) return;
+            completing = true;
+            stopLocalTick();
+            const endAtMs = timerEndAt || Date.now();
+            const subject = timerSubjectAtStart || document.getElementById('pomoSubject').value;
+            const claimed = await claimCompletion(timerEndAt);
+            timerEndAt = null;
+            timerSubjectAtStart = null;
+            timeLeft = 25 * 60;
+            updateTimerDisplay();
+            if (!claimed) {
+                setTimerStatus('');
+                completing = false;
+                return;
+            }
+            const endD = new Date(endAtMs);
+            const startD = new Date(endAtMs - FOCUS_MS);
+            const key = dateKeyOf(endD);
+            let data = await getData();
+            data = initDayData(data, key);
+            data[key].pomo += 1;
+            data[key].sessions.push({ start: hhmm(startD), end: hhmm(endD), subject });
+            await saveData(data);
+            await updateViews();
+            setTimerStatus('25분 세팅 완료 - 시작 버튼을 누르면 다시 시작돼요');
+            completing = false;
+            alert(`[${subject}] 25분 뽀모도로 완료! 🍅`);
+        }
+        async function startTimer() {
+            if (timerEndAt != null) return;
+            const subject = document.getElementById('pomoSubject').value;
+            timerSubjectAtStart = subject;
+            timerEndAt = Date.now() + timeLeft * 1000;
+            setTimerStatus('집중 중... (창을 닫아도 시간은 계속 흘러요)');
+            startLocalTick();
+            if (syncReady) {
+                try { await baseRef.child('pomodoro_timer').set({ endAt: timerEndAt, subject }); } catch (e) { console.error('타이머 저장 실패:', e); }
+            }
+        }
+        async function resetTimer() {
+            stopLocalTick();
+            timerEndAt = null;
+            timerSubjectAtStart = null;
+            timeLeft = 25 * 60;
+            updateTimerDisplay();
+            setTimerStatus('');
+            if (syncReady) {
+                try { await baseRef.child('pomodoro_timer').remove(); } catch (e) {}
+            }
+        }
+        function applyRemoteTimerState(remote) {
+            if (completing) return;
+            const remoteEndAt = (remote && remote.endAt) ? remote.endAt : null;
+            if (remoteEndAt === timerEndAt) return;
+            timerEndAt = remoteEndAt;
+            timerSubjectAtStart = remote ? (remote.subject || null) : null;
+            if (timerEndAt != null) {
+                if (timerSubjectAtStart) {
+                    const sel = document.getElementById('pomoSubject');
+                    if (sel) sel.value = timerSubjectAtStart;
+                }
+                const remaining = Math.round((timerEndAt - Date.now()) / 1000);
+                if (remaining > 0) {
+                    timeLeft = remaining;
+                    updateTimerDisplay();
+                    setTimerStatus('집중 중... (창을 닫아도 시간은 계속 흘러요)');
+                    startLocalTick();
+                } else {
+                    timeLeft = 0;
+                    updateTimerDisplay();
+                    handleTimerComplete();
+                }
+            } else {
+                stopLocalTick();
+                timeLeft = 25 * 60;
+                updateTimerDisplay();
+                setTimerStatus('');
+            }
+        }
+
+        // ── 딴생각 메모 ──
+        async function addWish() {
+            const input = document.getElementById('wishInput');
+            const text = input.value.trim();
+            if (!text) return;
+            const today = getTodayKey();
+            let data = await getData();
+            data = initDayData(data, today);
+            data[today].memos.unshift(text);
+            await saveData(data);
+            input.value = '';
+            await updateViews();
+        }
+        async function deleteWish(index) {
+            const today = getTodayKey();
+            let data = await getData();
+            if (data[today] && data[today].memos) {
+                data[today].memos.splice(index, 1);
+                await saveData(data);
+                await updateViews();
+            }
+        }
+        async function renderTodayMemos() {
+            const today = getTodayKey();
+            const data = await getData();            // 먼저 불러온 뒤 한 번에 그림(동시 호출 시 중복 방지)
+            const todayData = data[today] || { pomo: 0, memos: [] };
+            document.getElementById('todayPomo').textContent = todayData.pomo;
+            const ul = document.getElementById('memoList');
+            ul.innerHTML = '';
+            todayData.memos.forEach((text, i) => {
+                const li = document.createElement('li');
+                li.className = 'memo-item';
+                const span = document.createElement('span');
+                span.textContent = text;
+                const btn = document.createElement('button');
+                btn.className = 'btn-del';
+                btn.textContent = '✕';
+                btn.onclick = () => deleteWish(i);
+                li.appendChild(span);
+                li.appendChild(btn);
+                ul.appendChild(li);
+            });
+        }
+        const TARGET_WORDS = ['야구', '노래', '유튜브', '게임'];
+        async function showThiefRank() {
+            const data = await getData();
+            const counts = { '야구': 0, '노래': 0, '유튜브': 0, '게임': 0 };
+            Object.values(data).forEach(day => {
+                (day.memos || []).forEach(memo => {
+                    TARGET_WORDS.forEach(word => {
+                        if (String(memo).includes(word)) counts[word]++;
+                    });
+                });
+            });
+            const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+            const rankList = document.getElementById('rankList');
+            rankList.innerHTML = '';
+            sorted.forEach(([word, count], idx) => {
+                const li = document.createElement('li');
+                li.className = 'rank-item';
+                li.innerHTML = `
+                    <span class="rank-num">${idx + 1}</span>
+                    <span class="rank-word">${word}</span>
+                    <span class="rank-count">${count}회</span>
+                `;
+                rankList.appendChild(li);
+            });
+            openModal('thiefModal');
+        }
+
+        // ── 캘린더 ──
+        let currentDate = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+        let selectedDateKey = getTodayKey();
+        async function changeMonth(delta) {
+            currentDate.setMonth(currentDate.getMonth() + delta);
+            await renderCalendar();
+        }
+        async function selectDate(dateStr) {
+            selectedDateKey = dateStr;
+            await renderCalendar();
+            await renderDetail(dateStr);
+        }
+        async function renderDetail(dateStr) {
+            const data = await getData();
+            const day = data[dateStr] || { pomo: 0, memos: [], sessions: [] };
+            document.getElementById('detailBox').style.display = 'block';
+            document.getElementById('detailDate').textContent = `${formatNoYear(dateStr)} (뽀모도로 ${day.pomo}회)`;
+
+            // 공부 기록: 몇 시~몇 시에 어떤 과목
+            const sessionList = document.getElementById('sessionList');
+            sessionList.innerHTML = '';
+            const sessions = day.sessions.slice().sort((a, b) => String(a.start).localeCompare(String(b.start)));
+            sessions.forEach(s => {
+                const li = document.createElement('li');
+                const time = document.createElement('span');
+                time.className = 'session-time';
+                time.textContent = `${s.start} ~ ${s.end}`;
+                li.appendChild(time);
+                li.appendChild(document.createTextNode(` · ${s.subject || '과목 미지정'}`));
+                sessionList.appendChild(li);
+            });
+            const legacy = day.pomo - sessions.length;   // 시간 기록 기능 이전에 쌓인 횟수
+            if (legacy > 0) {
+                const li = document.createElement('li');
+                li.textContent = `시간 기록 없음 · ${legacy}회 (이전 기록)`;
+                sessionList.appendChild(li);
+            }
+            if (sessionList.children.length === 0) {
+                sessionList.innerHTML = '<li>공부 기록이 없습니다.</li>';
+            }
+
+            // 딴생각 메모
+            const detailList = document.getElementById('detailList');
+            detailList.innerHTML = '';
+            if (day.memos.length === 0) {
+                detailList.innerHTML = '<li>메모가 없습니다.</li>';
+            } else {
+                day.memos.forEach(m => {
+                    const li = document.createElement('li');
+                    li.textContent = m;
+                    detailList.appendChild(li);
+                });
+            }
+        }
+        async function renderCalendar() {
+            const data = await getData();            // 먼저 불러온 뒤 한 번에 그림(동시 호출 시 중복 방지)
+            const month = currentDate.getMonth();
+            document.getElementById('calendarMonth').textContent = `${currentDate.getFullYear()}년 ${month + 1}월`;
+            const grid = document.getElementById('calendarGrid');
+            grid.innerHTML = '';
+            DAY_NAMES.forEach(d => {
+                const div = document.createElement('div');
+                div.className = 'day-name';
+                div.textContent = d;
+                grid.appendChild(div);
+            });
+            const year = currentDate.getFullYear();
+            const firstDay = new Date(year, month, 1).getDay();
+            const lastDate = new Date(year, month + 1, 0).getDate();
+            for (let i = 0; i < firstDay; i++) {
+                const div = document.createElement('div');
+                div.className = 'day-cell empty';
+                grid.appendChild(div);
+            }
+            for (let d = 1; d <= lastDate; d++) {
+                const dayStr = `${year}-${pad2(month + 1)}-${pad2(d)}`;
+                const dayData = data[dayStr] || { pomo: 0 };
+                const div = document.createElement('div');
+                div.className = 'day-cell' + (dayStr === selectedDateKey ? ' selected' : '');
+                div.onclick = () => selectDate(dayStr);
+                let html = `<span>${d}</span>`;
+                if (dayData.pomo > 0) html += `<span class="pomo-badge">🍅${dayData.pomo}</span>`;
+                div.innerHTML = html;
+                grid.appendChild(div);
+            }
+        }
+
+        // ── 할 일 기록 (며칠 몇 교시까지 무엇을 할지) ──
+        let tasksCache = {};
+        function addTask() {
+            const dateEl = document.getElementById('taskDate');
+            const periodEl = document.getElementById('taskPeriod');
+            const textEl = document.getElementById('taskText');
+            const date = dateEl.value;
+            const text = textEl.value.trim();
+            if (!date) { alert('날짜를 선택해 주세요.'); return; }
+            if (!text) return;
+            if (!syncReady) { alert('저장소에 연결되지 않아 저장할 수 없어요.'); return; }
+            const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+            baseRef.child('pomodoro_tasks/' + id).set({ date, period: Number(periodEl.value), text, done: false })
+                .catch(e => console.error('저장 실패:', e));
+            textEl.value = '';
+        }
+        function toggleTask(id, done) {
+            if (!syncReady) return;
+            baseRef.child('pomodoro_tasks/' + id + '/done').set(done).catch(e => console.error(e));
+        }
+        function deleteTask(id) {
+            if (!syncReady) return;
+            baseRef.child('pomodoro_tasks/' + id).remove().catch(e => console.error(e));
+        }
+        function renderTasks() {
+            const ul = document.getElementById('taskList');
+            const items = Object.keys(tasksCache)
+                .map(id => Object.assign({ id }, tasksCache[id]))
+                .filter(t => t && t.date && t.text);
+            items.sort((a, b) =>
+                (a.done ? 1 : 0) - (b.done ? 1 : 0) ||
+                String(a.date).localeCompare(String(b.date)) ||
+                (a.period || 0) - (b.period || 0));
+            ul.innerHTML = '';
+            if (items.length === 0) {
+                const li = document.createElement('li');
+                li.className = 'task-empty';
+                li.textContent = '아직 적은 할 일이 없어요.';
+                ul.appendChild(li);
+                return;
+            }
+            items.forEach(t => {
+                const [y, mo, d] = String(t.date).split('-').map(Number);
+                const target = new Date(y, mo - 1, d);
+                const { diff, label: dday } = getDday(t.date);
+                const li = document.createElement('li');
+                li.className = 'task-item' + (t.done ? ' done' : '') + (!t.done && diff < 0 ? ' overdue' : '');
+                const cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.className = 'task-check';
+                cb.checked = !!t.done;
+                cb.onchange = () => toggleTask(t.id, cb.checked);
+                const body = document.createElement('div');
+                body.className = 'task-body';
+                const when = document.createElement('div');
+                when.className = 'task-when';
+                when.textContent = `${mo}월 ${d}일(${DAY_NAMES[target.getDay()]}) ${t.period}교시까지 · ${dday}`;
+                const text = document.createElement('div');
+                text.className = 'task-text';
+                text.textContent = t.text;
+                body.appendChild(when);
+                body.appendChild(text);
+                const del = document.createElement('button');
+                del.className = 'btn-del';
+                del.textContent = '✕';
+                del.title = '삭제';
+                del.onclick = () => deleteTask(t.id);
+                li.appendChild(cb);
+                li.appendChild(body);
+                li.appendChild(del);
+                ul.appendChild(li);
+            });
+        }
+
+        // ── 마감까지 남은 날 계산 (할 일 화면/타이머 화면 공통) ──
+        function getDday(dateStr) {
+            const [y, mo, d] = String(dateStr).split('-').map(Number);
+            const now = new Date();
+            const todayMid = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const diff = Math.round((new Date(y, mo - 1, d) - todayMid) / 86400000);
+            const label = diff === 0 ? '오늘' : (diff > 0 ? `D-${diff}` : `${-diff}일 지남`);
+            return { diff, label };
+        }
+
+        // ── 타이머 화면: 임박한 할 일 (안 끝낸 것 중 가장 급한 3개) ──
+        function renderUpcoming() {
+            const box = document.getElementById('upcomingBox');
+            const ul = document.getElementById('upcomingList');
+            const items = Object.keys(tasksCache)
+                .map(id => Object.assign({ id }, tasksCache[id]))
+                .filter(t => t && t.date && t.text && !t.done);
+            items.sort((a, b) =>
+                String(a.date).localeCompare(String(b.date)) ||
+                (a.period || 0) - (b.period || 0));
+            const top = items.slice(0, 3);
+            ul.innerHTML = '';
+            if (top.length === 0) { box.style.display = 'none'; return; }
+            box.style.display = 'block';
+            top.forEach(t => {
+                const [y, mo, d] = String(t.date).split('-').map(Number);
+                const { diff, label } = getDday(t.date);
+                const li = document.createElement('li');
+                li.className = 'upcoming-item' + (diff < 0 ? ' overdue' : (diff <= 1 ? ' soon' : ''));
+                const cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.className = 'upcoming-check';
+                cb.title = '완료';
+                cb.onchange = () => toggleTask(t.id, true);
+                const body = document.createElement('div');
+                body.className = 'upcoming-body';
+                const when = document.createElement('div');
+                when.className = 'upcoming-when';
+                when.textContent = `${mo}월 ${d}일 ${t.period}교시까지 · ${label}`;
+                const text = document.createElement('div');
+                text.className = 'upcoming-text';
+                text.textContent = t.text;
+                body.appendChild(when);
+                body.appendChild(text);
+                li.appendChild(cb);
+                li.appendChild(body);
+                ul.appendChild(li);
+            });
+        }
+
+        // ── 앱으로 설치 (홈 화면에 추가) ──
+        let deferredInstall = null;
+        function isStandalone() {
+            return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+        }
+        function isIOSDevice() {
+            return /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        }
+        function updateInstallBox() {
+            const btn = document.getElementById('installBtn');
+            btn.style.display = (!isStandalone() && (deferredInstall || isIOSDevice())) ? 'block' : 'none';
+        }
+        async function installApp() {
+            if (deferredInstall) {
+                deferredInstall.prompt();
+                try { await deferredInstall.userChoice; } catch (e) {}
+                deferredInstall = null;
+                updateInstallBox();
+                return;
+            }
+            if (isIOSDevice()) {
+                alert('아이폰/아이패드에서 설치하는 방법\n\n1) Safari로 이 페이지를 엽니다\n2) 화면 아래(또는 위)의 공유 버튼(□↑)을 누릅니다\n3) "홈 화면에 추가"를 누릅니다');
+            }
+        }
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredInstall = e;
+            updateInstallBox();
+        });
+        window.addEventListener('appinstalled', () => { deferredInstall = null; updateInstallBox(); });
+        if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(e => console.warn('서비스 워커 등록 실패:', e));
+            });
+        }
+
+        // ── 기록 저장 확인 ──
+        function withTimeout(promise, ms) {
+            return Promise.race([
+                promise,
+                new Promise((_, reject) => setTimeout(() => reject(new Error('서버 응답 없음 (인터넷 연결 확인)')), ms))
+            ]);
+        }
+        async function runCheck() {
+            const list = document.getElementById('checkList');
+            list.innerHTML = '';
+            openModal('checkModal');
+            const add = (ok, label, detail) => {
+                const li = document.createElement('li');
+                li.className = 'check-item' + (ok ? '' : ' bad');
+                const head = document.createElement('div');
+                head.className = 'check-label';
+                head.textContent = (ok ? '✅ ' : '❌ ') + label;
+                li.appendChild(head);
+                if (detail) {
+                    const d = document.createElement('div');
+                    d.className = 'check-detail';
+                    d.textContent = detail;
+                    li.appendChild(d);
+                }
+                list.appendChild(li);
+            };
+
+            // 1) 저장소 연결
+            if (!syncReady) {
+                add(false, '저장소 연결', '연결되지 않았어요. ' + (document.getElementById('timerStatus').textContent || '페이지를 새로고침하고 동기화 코드를 확인하세요.'));
+                return;
+            }
+            add(true, '저장소 연결', '동기화 코드: ' + (localStorage.getItem(SYNC_ID_KEY) || '-'));
+
+            // 2) 실제로 쓰고 다시 읽어 보기 (기록용 데이터에는 영향 없음)
+            try {
+                const stamp = Date.now();
+                const ref = baseRef.child('pomodoro_check');
+                await withTimeout(ref.set({ t: stamp }), 8000);
+                const snap = await withTimeout(ref.once('value'), 8000);
+                const back = snap.val();
+                await withTimeout(ref.remove(), 8000);
+                if (back && back.t === stamp) add(true, '저장·불러오기 테스트', '정상적으로 저장되고 다시 읽혀요.');
+                else add(false, '저장·불러오기 테스트', '저장은 했는데 읽은 값이 달라요.');
+            } catch (e) {
+                add(false, '저장·불러오기 테스트', '실패: ' + ((e && (e.code || e.message)) || e) + ' (Firebase 규칙/권한을 확인하세요)');
+                return;
+            }
+
+            // 3) 완료한 뽀모도로 기록
+            const data = await getData();
+            const todayData = data[getTodayKey()] || { pomo: 0, sessions: [] };
+            const byStart = (a, b) => String(a.start).localeCompare(String(b.start));
+            const todaySessions = todayData.sessions.slice().sort(byStart);
+            if (todaySessions.length > 0) {
+                const last = todaySessions[todaySessions.length - 1];
+                add(true, `오늘 완료한 뽀모도로: ${todayData.pomo}회`, `마지막 기록: ${last.start} ~ ${last.end} · ${last.subject || '과목 미지정'}`);
+            } else {
+                const keys = Object.keys(data).filter(k => data[k].sessions.length > 0).sort();
+                if (keys.length > 0) {
+                    const k = keys[keys.length - 1];
+                    const last = data[k].sessions.slice().sort(byStart).pop();
+                    add(true, `오늘 완료한 뽀모도로: ${todayData.pomo}회`, `오늘은 아직 없어요. 가장 최근 기록: ${formatNoYear(k)} ${last.start} ~ ${last.end} · ${last.subject || '과목 미지정'}`);
+                } else {
+                    add(true, `오늘 완료한 뽀모도로: ${todayData.pomo}회`, '시간이 남은 기록은 아직 없어요. 25분을 한 번 완료하면 여기에 나타나요.');
+                }
+            }
+
+            // 4) 타이머 상태
+            if (timerEndAt != null) add(true, '타이머', `진행 중 · 약 ${Math.ceil(timeLeft / 60)}분 남음 (끝나면 자동으로 기록돼요)`);
+            else add(true, '타이머', '대기 중 (시작 버튼을 눌러야 기록 대상이 돼요)');
+        }
+
+        async function updateViews() {
+            await renderTodayMemos();
+            await renderCalendar();
+            if (document.getElementById('calendarModal').style.display === 'flex') {
+                await renderDetail(selectedDateKey);
+            }
+        }
+
+        // 초기 로드
+        document.getElementById('taskDate').value = getTodayKey();
+        (async () => {
+            await initCloudSync();
+            await updateViews();
+        })();
+
+        // 화면으로 돌아왔을 때 한 번 더 최신 상태 확인 (보조용)
+        document.addEventListener('visibilitychange', async () => {
+            if (!document.hidden) { await updateViews(); renderUpcoming(); }
+        });
+        // 자정이 지나면 D-day가 바뀌므로 1분마다 다시 계산
+        setInterval(renderUpcoming, 60 * 1000);
+        updateInstallBox();
+    </script>
+</body>
+</html>
