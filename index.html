@@ -2,8 +2,16 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>포모도로 타이머 & 할 일 기록</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#080c10">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="포모도로">
+    <link rel="icon" type="image/png" href="icon-192.png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
     <style>
         * { box-sizing: border-box; }
         body {
@@ -16,6 +24,7 @@
             justify-content: center;
             min-height: 100vh;
             padding: 20px 10px;
+            padding: calc(20px + env(safe-area-inset-top)) calc(10px + env(safe-area-inset-right)) calc(20px + env(safe-area-inset-bottom)) calc(10px + env(safe-area-inset-left));
             margin: 0;
         }
         .container {
@@ -263,11 +272,35 @@
         .check-detail { font-size: 0.75rem; color: #94a3b8; margin-top: 3px; word-break: break-word; }
         .btn-recheck { width: 100%; background: transparent; color: #00f3ff; border: 1px solid #00f3ff; padding: 7px; font-size: 0.8rem; font-weight: 700; border-radius: 6px; cursor: pointer; }
         .btn-recheck:hover { background: #00f3ff; color: #080c10; }
+        .upcoming-card { width: 100%; background: #0f171e; border: 1px solid #1e4a55; border-radius: 14px; padding: 10px 12px; }
+        .upcoming-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .upcoming-title { font-size: 0.82rem; font-weight: 800; color: #00f3ff; }
+        .upcoming-more { background: none; border: none; color: #94a3b8; font-size: 0.72rem; cursor: pointer; padding: 2px 0; }
+        .upcoming-more:hover { color: #00f3ff; }
+        .upcoming-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 5px; }
+        .upcoming-item { display: flex; align-items: center; gap: 8px; background: #080c10; border: 1px solid #1e293b; border-radius: 8px; padding: 6px 9px; }
+        .upcoming-item.soon { border-color: #6b4a1e; }
+        .upcoming-item.overdue { border-color: #5b2a35; }
+        .upcoming-check { accent-color: #00f3ff; cursor: pointer; flex: 0 0 auto; }
+        .upcoming-body { flex: 1; min-width: 0; }
+        .upcoming-when { font-size: 0.7rem; font-weight: 700; color: #00f3ff; }
+        .upcoming-item.soon .upcoming-when { color: #ffb347; }
+        .upcoming-item.overdue .upcoming-when { color: #ff6b6b; }
+        .upcoming-text { font-size: 0.82rem; color: #e2e8f0; word-break: break-word; }
+        .btn-install { width: 100%; background: transparent; border: 1px dashed #1e4a55; color: #94a3b8; padding: 8px; border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
+        .btn-install:hover { color: #00f3ff; border-color: #00f3ff; }
     </style>
 </head>
 <body>
     <div id="app-timer" class="page active">
         <div class="container">
+            <div class="upcoming-card" id="upcomingBox" style="display: none;">
+                <div class="upcoming-head">
+                    <div class="upcoming-title">⏰ 임박한 할 일</div>
+                    <button class="upcoming-more" onclick="switchPage('app-tasks')">전체 보기 ›</button>
+                </div>
+                <ul class="upcoming-list" id="upcomingList"></ul>
+            </div>
             <div class="card">
                 <div class="top-bar">
                     <button class="icon-btn" onclick="openModal('calendarModal')" title="달력 보기">📅</button>
@@ -286,7 +319,7 @@
                 <div class="timer-status" id="timerStatus"></div>
                 <button class="btn-start" onclick="startTimer()">시작</button>
                 <button class="btn-thief" onclick="showThiefRank()">내 집중력 도둑은? 🔍</button>
-                <button class="btn-thief" onclick="runCheck()">기록 저장 확인 🔧</button>
+                <button class="btn-thief" onclick="runCheck()">상태 확인 🔧</button>
             </div>
             <div class="card memo-section">
                 <div class="input-box">
@@ -296,6 +329,7 @@
                 <ul class="memo-list" id="memoList"></ul>
                 <button class="btn-reset-small" onclick="resetTimer()">초기화</button>
             </div>
+            <button class="btn-install" id="installBtn" style="display: none;" onclick="installApp()">📲 앱으로 설치</button>
         </div>
     </div>
 
@@ -355,7 +389,7 @@
     <div class="modal-overlay" id="checkModal">
         <div class="modal-content">
             <button class="modal-close" onclick="closeModal('checkModal')">✕</button>
-            <div class="thief-title">기록 저장 확인 🔧</div>
+            <div class="thief-title">상태 확인 🔧</div>
             <ul class="check-list" id="checkList"></ul>
             <button class="btn-recheck" onclick="runCheck()">다시 확인</button>
         </div>
@@ -364,6 +398,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
     <script>
+        // 코드를 고칠 때마다 이 버전 문자열을 바꿔서 올리면, '상태 확인'에서 새 버전 반영 여부를 알 수 있어요
+        const APP_VERSION = '2026-10-15-a';
 
         // ── 데이터 저장: Firebase Realtime Database (어느 기기에서 열어도 같은 데이터) ──
         const SYNC_CONFIG = {
@@ -408,6 +444,7 @@
                 baseRef.child('pomodoro_tasks').on('value', (snap) => {
                     tasksCache = snap.val() || {};
                     renderTasks();
+                    renderUpcoming();
                 });
                 // 창을 새로 열 때(또는 다른 기기에서) 저장된 종료 시각을 즉시 반영
                 baseRef.child('pomodoro_timer').on('value', (snap) => {
@@ -819,13 +856,10 @@
                 ul.appendChild(li);
                 return;
             }
-            const now = new Date();
-            const todayMid = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             items.forEach(t => {
                 const [y, mo, d] = String(t.date).split('-').map(Number);
                 const target = new Date(y, mo - 1, d);
-                const diff = Math.round((target - todayMid) / 86400000);
-                const dday = diff === 0 ? '오늘' : (diff > 0 ? `D-${diff}` : `${-diff}일 지남`);
+                const { diff, label: dday } = getDday(t.date);
                 const li = document.createElement('li');
                 li.className = 'task-item' + (t.done ? ' done' : '') + (!t.done && diff < 0 ? ' overdue' : '');
                 const cb = document.createElement('input');
@@ -855,7 +889,108 @@
             });
         }
 
-        // ── 기록 저장 확인 ──
+        // ── 마감까지 남은 날 계산 (할 일 화면/타이머 화면 공통) ──
+        function getDday(dateStr) {
+            const [y, mo, d] = String(dateStr).split('-').map(Number);
+            const now = new Date();
+            const todayMid = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const diff = Math.round((new Date(y, mo - 1, d) - todayMid) / 86400000);
+            const label = diff === 0 ? '오늘' : (diff > 0 ? `D-${diff}` : `${-diff}일 지남`);
+            return { diff, label };
+        }
+
+        // ── 타이머 화면: 임박한 할 일 (안 끝낸 것 중 가장 급한 3개) ──
+        function renderUpcoming() {
+            const box = document.getElementById('upcomingBox');
+            const ul = document.getElementById('upcomingList');
+            const items = Object.keys(tasksCache)
+                .map(id => Object.assign({ id }, tasksCache[id]))
+                .filter(t => t && t.date && t.text && !t.done);
+            items.sort((a, b) =>
+                String(a.date).localeCompare(String(b.date)) ||
+                (a.period || 0) - (b.period || 0));
+            const top = items.slice(0, 3);
+            ul.innerHTML = '';
+            if (top.length === 0) { box.style.display = 'none'; return; }
+            box.style.display = 'block';
+            top.forEach(t => {
+                const [y, mo, d] = String(t.date).split('-').map(Number);
+                const { diff, label } = getDday(t.date);
+                const li = document.createElement('li');
+                li.className = 'upcoming-item' + (diff < 0 ? ' overdue' : (diff <= 1 ? ' soon' : ''));
+                const cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.className = 'upcoming-check';
+                cb.title = '완료';
+                cb.onchange = () => toggleTask(t.id, true);
+                const body = document.createElement('div');
+                body.className = 'upcoming-body';
+                const when = document.createElement('div');
+                when.className = 'upcoming-when';
+                when.textContent = `${mo}월 ${d}일 ${t.period}교시까지 · ${label}`;
+                const text = document.createElement('div');
+                text.className = 'upcoming-text';
+                text.textContent = t.text;
+                body.appendChild(when);
+                body.appendChild(text);
+                li.appendChild(cb);
+                li.appendChild(body);
+                ul.appendChild(li);
+            });
+        }
+
+        // ── 앱으로 설치 (홈 화면에 추가) ──
+        let deferredInstall = null;
+        function isStandalone() {
+            return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+        }
+        function isIOSDevice() {
+            return /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        }
+        function updateInstallBox() {
+            const btn = document.getElementById('installBtn');
+            btn.style.display = (!isStandalone() && (deferredInstall || isIOSDevice())) ? 'block' : 'none';
+        }
+        async function installApp() {
+            if (deferredInstall) {
+                deferredInstall.prompt();
+                try { await deferredInstall.userChoice; } catch (e) {}
+                deferredInstall = null;
+                updateInstallBox();
+                return;
+            }
+            if (isIOSDevice()) {
+                alert('아이폰/아이패드에서 설치하는 방법\n\n1) Safari로 이 페이지를 엽니다\n2) 화면 아래(또는 위)의 공유 버튼(□↑)을 누릅니다\n3) "홈 화면에 추가"를 누릅니다');
+            }
+        }
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredInstall = e;
+            updateInstallBox();
+        });
+        window.addEventListener('appinstalled', () => { deferredInstall = null; updateInstallBox(); });
+        if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(e => console.warn('서비스 워커 등록 실패:', e));
+            });
+        }
+
+        // 저장돼 있던 앱 파일(캐시)을 지우고 최신 파일로 다시 열기 (기록 데이터는 지워지지 않음)
+        async function hardRefresh() {
+            try {
+                if ('serviceWorker' in navigator) {
+                    const regs = await navigator.serviceWorker.getRegistrations();
+                    await Promise.all(regs.map(r => r.unregister()));
+                }
+                if (window.caches) {
+                    const keys = await caches.keys();
+                    await Promise.all(keys.map(k => caches.delete(k)));
+                }
+            } catch (e) {}
+            location.replace(location.pathname + '?v=' + Date.now());
+        }
+
+        // ── 상태 확인 (앱 버전 · 저장 · 기록 · 타이머) ──
         function withTimeout(promise, ms) {
             return Promise.race([
                 promise,
@@ -880,7 +1015,34 @@
                     li.appendChild(d);
                 }
                 list.appendChild(li);
+                return li;
             };
+
+            // 0) 앱 버전: 서버(깃허브)에 올라간 최신 파일과 지금 화면의 버전 비교
+            try {
+                const res = await withTimeout(fetch('index.html?v=' + Date.now(), { cache: 'no-store' }), 8000);
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const text = await res.text();
+                const m = text.match(/APP_VERSION\s*=\s*'([^']+)'/);
+                const latest = m ? m[1] : null;
+                if (latest === APP_VERSION) {
+                    add(true, '앱 버전: ' + APP_VERSION, '최신 버전이에요.');
+                } else {
+                    const li = add(false, '앱 버전: ' + APP_VERSION,
+                        latest ? `새 버전(${latest})이 올라와 있어요. 아래 버튼으로 최신으로 바꿔 주세요.`
+                               : '서버의 파일에 버전 표시가 없어요. 업로드가 덜 됐거나 반영 중일 수 있어요.');
+                    if (latest) {
+                        const btn = document.createElement('button');
+                        btn.className = 'btn-recheck';
+                        btn.style.marginTop = '6px';
+                        btn.textContent = '최신 버전으로 바꾸기';
+                        btn.onclick = hardRefresh;
+                        li.appendChild(btn);
+                    }
+                }
+            } catch (e) {
+                add(false, '앱 버전: ' + APP_VERSION, '서버의 최신 파일을 확인하지 못했어요: ' + ((e && e.message) || e));
+            }
 
             // 1) 저장소 연결
             if (!syncReady) {
@@ -945,8 +1107,11 @@
 
         // 화면으로 돌아왔을 때 한 번 더 최신 상태 확인 (보조용)
         document.addEventListener('visibilitychange', async () => {
-            if (!document.hidden) await updateViews();
+            if (!document.hidden) { await updateViews(); renderUpcoming(); }
         });
+        // 자정이 지나면 D-day가 바뀌므로 1분마다 다시 계산
+        setInterval(renderUpcoming, 60 * 1000);
+        updateInstallBox();
     </script>
 </body>
 </html>
