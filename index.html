@@ -43,18 +43,22 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .memo-item { background-color: #080c10; border: 1px solid #1e293b; padding: 6px 10px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem; color: #e2e8f0; }
 .btn-del { background: none; border: none; color: #475569; cursor: pointer; font-size: 0.8rem; }
 .btn-del:hover { color: #ff3366; }
+.session-del { margin-left: 8px; padding: 2px 6px; }
+.modal-content.modal-wide { max-width: 560px; width: 94%; max-height: 90vh; }
+.detail-total { color: #94a3b8; font-size: 0.78rem; font-weight: 600; margin-bottom: 4px; }
 .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); backdrop-filter: blur(3px); z-index: 100; justify-content: center; align-items: center; }
 .modal-content { background: #0f171e; border: 1px solid #00f3ff; box-shadow: 0 0 15px rgba(0,243,255,0.2); border-radius: 14px; padding: 20px 16px 16px; width: 90%; max-width: 380px; max-height: 85vh; overflow-y: auto; position: relative; }
 .modal-close { position: absolute; top: 6px; right: 8px; z-index: 20; background: none; border: none; color: #94a3b8; font-size: 1.1rem; cursor: pointer; }
 .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-right: 34px; gap: 8px; }
 .calendar-title { font-size: 0.88rem; font-weight: 700; color: #00f3ff; }
 .calendar-nav { background: none; border: none; color: #94a3b8; cursor: pointer; position: relative; z-index: 21; min-width: 30px; min-height: 30px; padding: 4px 8px; touch-action: manipulation; }
-.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; text-align: center; font-size: 0.7rem; }
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; font-size: 0.78rem; }
 .day-name { color: #64748b; font-weight: 600; padding-bottom: 2px; }
-.day-cell { background-color: #080c10; border: 1px solid #1e293b; border-radius: 4px; padding: 3px 1px; min-height: 38px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; cursor: pointer; }
+.day-cell { background-color: #080c10; border: 1px solid #1e293b; border-radius: 4px; padding: 4px 1px; min-height: 66px; display: flex; flex-direction: column; justify-content: flex-start; gap: 2px; align-items: center; cursor: pointer; }
 .day-cell.empty { border: none; background: none; cursor: default; }
 .day-cell.selected { border-color: #00f3ff; background-color: #1a2a3a; }
-.pomo-badge { font-size: 0.6rem; color: #00f3ff; font-weight: 700; }
+.pomo-badge { font-size: 0.72rem; color: #00f3ff; font-weight: 700; }
+.study-time { font-size: 0.64rem; color: #94a3b8; font-weight: 600; }
 .detail-box { margin-top: 8px; padding-top: 8px; border-top: 1px solid #1e293b; font-size: 0.8rem; }
 .detail-title { color: #00f3ff; font-weight: 700; margin-bottom: 4px; }
 .detail-list { list-style: square; padding-left: 14px; margin: 0; color: #cbd5e1; }
@@ -191,7 +195,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 </div>
 
 <div class="modal-overlay" id="calendarModal">
-  <div class="modal-content">
+  <div class="modal-content modal-wide">
     <button class="modal-close" onclick="closeModal('calendarModal')">✕</button>
     <div class="calendar-header">
       <button class="calendar-nav" onclick="changeMonth(-1)">❮</button>
@@ -201,6 +205,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     <div class="calendar-grid" id="calendarGrid"></div>
     <div class="detail-box" id="detailBox" style="display: none;">
       <div class="detail-title" id="detailDate"></div>
+      <div class="detail-total" id="detailTotal"></div>
       <div class="detail-sub">공부 기록</div>
       <ul class="detail-list" id="sessionList"></ul>
       <div class="detail-sub">딴생각 메모</div>
@@ -229,7 +234,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
 // 코드를 고칠 때마다 이 버전 문자열을 바꿔서 올리면, '상태 확인'에서 새 버전 반영 여부를 알 수 있어요
-const APP_VERSION = '2026-10-21-a';
+const APP_VERSION = '2026-10-21-b';
 
 // ── 데이터 저장: Firebase Realtime Database (어느 기기에서 열어도 같은 데이터) ──
 const SYNC_CONFIG = {
@@ -593,29 +598,89 @@ async function selectDate(dateStr) {
     await renderCalendar();
     await renderDetail(dateStr);
 }
+// ── 공부 시간 계산 ──
+// 세션 하나의 길이(분): 저장된 min 값이 있으면 사용, 없으면 시작~끝 시각으로 계산, 그래도 안 되면 25분
+function sessionMinutes(s) {
+    if (typeof s.min === 'number' && s.min > 0) return s.min;
+    const a = String(s.start).split(':').map(Number);
+    const b = String(s.end).split(':').map(Number);
+    if (a.length === 2 && b.length === 2 && !a.concat(b).some(isNaN)) {
+        let diff = (b[0] * 60 + b[1]) - (a[0] * 60 + a[1]);
+        if (diff <= 0) diff += 24 * 60;
+        return diff;
+    }
+    return 25;
+}
+// 하루 공부 시간(분): 시간 기록이 있는 세션 + 시간 기록 이전 횟수(25분으로 계산)
+function dayStudyMin(day) {
+    const sessions = day.sessions || [];
+    const legacy = Math.max(0, (day.pomo || 0) - sessions.length);
+    return sessions.reduce((sum, s) => sum + sessionMinutes(s), 0) + legacy * 25;
+}
+function fmtMin(m) {
+    const h = Math.floor(m / 60), r = m % 60;
+    if (h === 0) return `${r}분`;
+    return r ? `${h}시간 ${r}분` : `${h}시간`;
+}
+function fmtMinShort(m) {
+    const h = Math.floor(m / 60), r = m % 60;
+    if (h === 0) return `${r}m`;
+    return r ? `${h}h${r}m` : `${h}h`;
+}
+
+// ── 공부 기록 취소 (idx가 -1이면 '시간 기록 없음' 항목) ──
+async function cancelSession(dateStr, idx) {
+    if (!confirm('이 공부 기록을 취소할까요?\n뽀모도로 횟수도 1회 줄어요.')) return;
+    const data = await getData();
+    const d = data[dateStr];
+    if (!d) return;
+    if (idx >= 0) {
+        if (idx >= d.sessions.length) return;
+        d.sessions.splice(idx, 1);
+    } else if (d.pomo <= d.sessions.length) {
+        return;
+    }
+    d.pomo = Math.max(0, d.pomo - 1);
+    await saveData(data);
+    await updateViews();
+}
+function makeCancelBtn(onClick) {
+    const btn = document.createElement('button');
+    btn.className = 'btn-del session-del';
+    btn.textContent = '✕';
+    btn.title = '기록 취소';
+    btn.onclick = onClick;
+    return btn;
+}
+
 async function renderDetail(dateStr) {
     const data = await getData();
     const day = data[dateStr] || { pomo: 0, memos: [], sessions: [] };
     document.getElementById('detailBox').style.display = 'block';
     document.getElementById('detailDate').textContent = `${formatNoYear(dateStr)} (뽀모도로 ${day.pomo}회)`;
+    document.getElementById('detailTotal').textContent = `공부 시간 ${fmtMin(dayStudyMin(day))}`;
 
-    // 공부 기록: 몇 시~몇 시에 어떤 과목
+    // 공부 기록: 몇 시~몇 시에 어떤 과목 (✕로 취소 가능)
     const sessionList = document.getElementById('sessionList');
     sessionList.innerHTML = '';
-    const sessions = day.sessions.slice().sort((a, b) => String(a.start).localeCompare(String(b.start)));
-    sessions.forEach(s => {
+    const sessions = day.sessions
+        .map((s, i) => ({ s, i }))
+        .sort((a, b) => String(a.s.start).localeCompare(String(b.s.start)));
+    sessions.forEach(({ s, i }) => {
         const li = document.createElement('li');
         const time = document.createElement('span');
         time.className = 'session-time';
         time.textContent = `${s.start} ~ ${s.end}`;
         li.appendChild(time);
-        li.appendChild(document.createTextNode(` · ${s.subject || '과목 미지정'}`));
+        li.appendChild(document.createTextNode(` · ${s.subject || '과목 미지정'} (${fmtMin(sessionMinutes(s))})`));
+        li.appendChild(makeCancelBtn(() => cancelSession(dateStr, i)));
         sessionList.appendChild(li);
     });
-    const legacy = day.pomo - sessions.length;   // 시간 기록 기능 이전에 쌓인 횟수
+    const legacy = day.pomo - day.sessions.length;   // 시간 기록 기능 이전에 쌓인 횟수
     if (legacy > 0) {
         const li = document.createElement('li');
-        li.textContent = `시간 기록 없음 · ${legacy}회 (이전 기록)`;
+        li.appendChild(document.createTextNode(`시간 기록 없음 · ${legacy}회 (이전 기록)`));
+        li.appendChild(makeCancelBtn(() => cancelSession(dateStr, -1)));
         sessionList.appendChild(li);
     }
     if (sessionList.children.length === 0) {
@@ -657,12 +722,15 @@ async function renderCalendar() {
     }
     for (let d = 1; d <= lastDate; d++) {
         const dayStr = `${year}-${pad2(month + 1)}-${pad2(d)}`;
-        const dayData = data[dayStr] || { pomo: 0 };
+        const dayData = data[dayStr] || { pomo: 0, sessions: [] };
         const div = document.createElement('div');
         div.className = 'day-cell' + (dayStr === selectedDateKey ? ' selected' : '');
         div.onclick = () => selectDate(dayStr);
         let html = `<span>${d}</span>`;
-        if (dayData.pomo > 0) html += `<span class="pomo-badge">🍅${dayData.pomo}</span>`;
+        if (dayData.pomo > 0) {
+            html += `<span class="pomo-badge">🍅${dayData.pomo}</span>`;
+            html += `<span class="study-time">${fmtMinShort(dayStudyMin(dayData))}</span>`;
+        }
         div.innerHTML = html;
         grid.appendChild(div);
     }
