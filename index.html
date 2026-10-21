@@ -234,7 +234,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
 // 코드를 고칠 때마다 이 버전 문자열을 바꿔서 올리면, '상태 확인'에서 새 버전 반영 여부를 알 수 있어요
-const APP_VERSION = '2026-10-21-b';
+const APP_VERSION = '2026-10-21-c';
 
 // ── 데이터 저장: Firebase Realtime Database (어느 기기에서 열어도 같은 데이터) ──
 const SYNC_CONFIG = {
@@ -918,7 +918,13 @@ function withTimeout(promise, ms) {
         new Promise((_, reject) => setTimeout(() => reject(new Error('서버 응답 없음 (인터넷 연결 확인)')), ms))
     ]);
 }
+let checking = false;
 async function runCheck() {
+    if (checking) return;          // 확인이 겹쳐 돌면 서로의 테스트 값을 덮어써서 가짜 실패가 나므로 한 번에 하나만 실행
+    checking = true;
+    try { await runCheckInner(); } finally { checking = false; }
+}
+async function runCheckInner() {
     const list = document.getElementById('checkList');
     list.innerHTML = '';
     openModal('checkModal');
