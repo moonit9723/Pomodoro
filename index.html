@@ -41,8 +41,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .btn-add { flex: 0 0 55px; padding: 8px; background: none; border: 1px solid #00f3ff; color: #00f3ff; border-radius: 6px; cursor: pointer; font-weight: bold; }
 .memo-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; max-height: 110px; overflow-y: auto; }
 .memo-item { background-color: #080c10; border: 1px solid #1e293b; padding: 6px 10px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem; color: #e2e8f0; }
-.btn-del { background: none; border: none; color: #475569; cursor: pointer; font-size: 0.8rem; }
-.btn-del:hover { color: #ff3366; }
+.btn-del { background: none; border: none; color: #ff4d4d; cursor: pointer; font-size: 0.8rem; }
+.btn-del:hover { color: #ff9a9a; }
 .session-del { margin-left: 8px; padding: 2px 8px; color: #ff6b6b; border: 1px solid #5b2a35; border-radius: 4px; font-size: 0.85rem; }
 .session-del:hover { background: #ff4d4d; color: #fff; }
 .modal-content.modal-wide { max-width: 560px; width: 94%; max-height: 90vh; }
@@ -58,6 +58,32 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .trash-restore:hover { background: #00f3ff; color: #080c10; }
 .trash-purge { color: #ff6b6b; border: 1px solid #5b2a35; }
 .trash-purge:hover { background: #ff4d4d; color: #fff; }
+.subject-filter { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.subject-chip { display: flex; align-items: center; gap: 4px; background: #080c10; border: 1px solid #00f3ff; color: #00f3ff; border-radius: 14px; padding: 4px 9px; font-size: 0.75rem; font-weight: 700; cursor: pointer; user-select: none; }
+.subject-chip.off { border-color: #1e293b; color: #64748b; }
+.subject-chip input { accent-color: #00f3ff; margin: 0; cursor: pointer; }
+.month-summary { font-size: 0.8rem; color: #cbd5e1; font-weight: 700; margin-bottom: 10px; white-space: pre-line; }
+.confirm-box { text-align: center; max-width: 340px; padding: 26px 18px 18px; }
+.confirm-title { font-size: 1.6rem; font-weight: 800; color: #fff; line-height: 1.35; word-break: keep-all; margin-bottom: 12px; }
+.confirm-detail { font-size: 0.8rem; color: #94a3b8; white-space: pre-line; margin-bottom: 18px; }
+.confirm-actions { display: flex; gap: 8px; }
+.confirm-actions button { flex: 1; padding: 11px; border-radius: 8px; font-size: 0.95rem; font-weight: 700; cursor: pointer; background: transparent; }
+.confirm-no { color: #00f3ff; border: 1.5px solid #00f3ff; }
+.confirm-no:hover { background: #00f3ff; color: #080c10; }
+.confirm-yes { color: #ff6b6b; border: 1.5px solid #ff6b6b; }
+.confirm-yes:hover { background: #ff4d4d; color: #fff; }
+.date-btn { text-align: left; cursor: pointer; font-family: inherit; }
+.task-hint { width: 100%; font-size: 0.72rem; color: #64748b; margin: -4px 0 8px; }
+.task-edit { display: flex; flex-direction: column; gap: 6px; width: 100%; margin-bottom: 4px; }
+.btn-cancel-edit { color: #94a3b8; border-color: #1e293b; }
+.datepick-box { max-width: 440px; width: 94%; }
+.datepick-box .calendar-title { font-size: 1.1rem; }
+.datepick-grid { gap: 5px; font-size: 1rem; }
+.datepick-grid .day-name { font-size: 0.85rem; padding-bottom: 4px; }
+.datepick-grid .day-cell { min-height: 54px; justify-content: center; align-items: center; font-size: 1.05rem; font-weight: 700; color: #e2e8f0; }
+.datepick-grid .day-cell:hover { border-color: #00f3ff; }
+.datepick-grid .day-cell.today { border-color: #ffb347; color: #ffb347; }
+.datepick-grid .day-cell.selected { color: #00f3ff; }
 .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); backdrop-filter: blur(3px); z-index: 100; justify-content: center; align-items: center; }
 .modal-content { background: #0f171e; border: 1px solid #00f3ff; box-shadow: 0 0 15px rgba(0,243,255,0.2); border-radius: 14px; padding: 20px 16px 16px; width: 90%; max-width: 380px; max-height: 85vh; overflow-y: auto; position: relative; }
 .modal-close { position: absolute; top: 6px; right: 8px; z-index: 20; background: none; border: none; color: #94a3b8; font-size: 1.1rem; cursor: pointer; }
@@ -99,7 +125,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .task-item.done .task-when { color: #64748b; }
 .task-check { accent-color: #00f3ff; cursor: pointer; flex: 0 0 auto; }
 .task-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-.task-when { font-size: 0.72rem; color: #00f3ff; font-weight: 700; }
+.task-when { font-size: 0.72rem; color: #00f3ff; font-weight: 700; cursor: pointer; touch-action: manipulation; user-select: none; }
 .task-text { font-size: 0.85rem; color: #e2e8f0; word-break: break-word; }
 .task-empty { text-align: center; color: #64748b; font-size: 0.82rem; padding: 14px 0; }
 .check-list { list-style: none; padding: 0; margin: 0 0 10px; display: flex; flex-direction: column; gap: 8px; }
@@ -164,6 +190,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
       <button class="btn-start" onclick="startTimer()">시작</button>
       <button class="btn-thief" onclick="showThiefRank()">내 집중력 도둑은? 🔍</button>
       <button class="btn-thief" onclick="runCheck()">상태 확인 🔧</button>
+      <button class="btn-thief trash-open-btn" onclick="openTrash()">🗑 휴지통 (0)</button>
     </div>
     <div class="card memo-section">
       <div class="input-box">
@@ -185,7 +212,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     </div>
     <div class="task-form">
       <div class="task-form-row">
-        <input type="date" id="taskDate" class="task-input">
+        <input type="hidden" id="taskDate">
+        <button class="task-input date-btn" id="taskDateBtn" onclick="chooseTaskDate()"></button>
         <select id="taskPeriod" class="task-select">
           <option value="1">1교시</option>
           <option value="2">2교시</option>
@@ -202,7 +230,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
         <button class="btn-add" onclick="addTask()">추가</button>
       </div>
     </div>
+    <div class="task-hint">날짜 줄을 두 번 누르면 날짜·교시를 바꿀 수 있어요.</div>
     <ul class="task-list" id="taskList"></ul>
+    <button class="trash-btn trash-open-btn" onclick="openTrash()">🗑 휴지통 (0)</button>
   </div>
 </div>
 
@@ -214,6 +244,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
       <div class="calendar-title" id="calendarMonth"></div>
       <button class="calendar-nav" onclick="changeMonth(1)">❯</button>
     </div>
+    <div class="subject-filter" id="subjectFilter"></div>
+    <div class="month-summary" id="monthSummary"></div>
     <div class="calendar-grid" id="calendarGrid"></div>
     <div class="detail-box" id="detailBox" style="display: none;">
       <div class="detail-title" id="detailDate"></div>
@@ -223,7 +255,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
       <div class="detail-sub">딴생각 메모</div>
       <ul class="detail-list" id="detailList"></ul>
     </div>
-    <button class="trash-btn" id="trashBtn" onclick="openTrash()">🗑 휴지통 (0)</button>
   </div>
 </div>
 <div class="modal-overlay" id="thiefModal">
@@ -242,6 +273,28 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
   </div>
 </div>
 
+<div class="modal-overlay" id="datePickModal" style="z-index: 200;">
+  <div class="modal-content datepick-box">
+    <button class="modal-close" id="datePickClose">✕</button>
+    <div class="calendar-header">
+      <button class="calendar-nav" id="datePickPrev">❮</button>
+      <div class="calendar-title" id="datePickTitle"></div>
+      <button class="calendar-nav" id="datePickNext">❯</button>
+    </div>
+    <div class="calendar-grid datepick-grid" id="datePickGrid"></div>
+    <button class="btn-recheck" id="datePickToday" style="margin-top: 12px; padding: 10px;">오늘로 선택</button>
+  </div>
+</div>
+<div class="modal-overlay" id="confirmModal" style="z-index: 200;">
+  <div class="modal-content confirm-box">
+    <div class="confirm-title" id="confirmTitle"></div>
+    <div class="confirm-detail" id="confirmDetail"></div>
+    <div class="confirm-actions">
+      <button class="confirm-no" id="confirmNo">아니요</button>
+      <button class="confirm-yes" id="confirmYes">네</button>
+    </div>
+  </div>
+</div>
 <div class="modal-overlay" id="trashModal">
   <div class="modal-content">
     <button class="modal-close" onclick="closeModal('trashModal')">✕</button>
@@ -256,7 +309,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
 // 코드를 고칠 때마다 이 버전 문자열을 바꿔서 올리면, '상태 확인'에서 새 버전 반영 여부를 알 수 있어요
-const APP_VERSION = '2026-10-21-e';
+const APP_VERSION = '2026-10-21-g';
 
 // ── 데이터 저장: Firebase Realtime Database (어느 기기에서 열어도 같은 데이터) ──
 const SYNC_CONFIG = {
@@ -377,6 +430,8 @@ function switchPage(pageId) {
 async function openModal(id) {
     document.getElementById(id).style.display = 'flex';
     if (id === 'calendarModal') {
+        subjectChecked = new Set(SUBJECTS);
+        renderSubjectFilter();
         await renderCalendar();
         await renderDetail(selectedDateKey);
     }
@@ -639,11 +694,53 @@ function sessionMinutes(s) {
     }
     return 25;
 }
-// 하루 공부 시간(분): 시간 기록이 있는 세션 + 시간 기록 이전 횟수(25분으로 계산)
-function dayStudyMin(day) {
-    const sessions = day.sessions || [];
-    const legacy = Math.max(0, (day.pomo || 0) - sessions.length);
-    return sessions.reduce((sum, s) => sum + sessionMinutes(s), 0) + legacy * 25;
+// ── 과목 체크리스트: 체크된 과목만 합산 (기본은 전부 체크) ──
+const SUBJECTS = Array.from(document.querySelectorAll('#pomoSubject option')).map(o => o.value);
+let subjectChecked = new Set(SUBJECTS);
+function isAllChecked() { return subjectChecked.size === SUBJECTS.length; }
+function subjectOf(s) { return SUBJECTS.includes(s.subject) ? s.subject : '기타'; }   // 목록에 없는 과목은 '기타'
+// 하루 횟수/공부 시간(분). 과목을 알 수 없는 '이전 기록'(시간 기록 없음)은 전체 체크일 때만 포함(1회=25분)
+function dayStats(day) {
+    const sessions = (day.sessions || []).filter(s => subjectChecked.has(subjectOf(s)));
+    const legacy = isAllChecked() ? Math.max(0, (day.pomo || 0) - (day.sessions || []).length) : 0;
+    return { count: sessions.length + legacy, min: sessions.reduce((sum, s) => sum + sessionMinutes(s), 0) + legacy * 25 };
+}
+function renderSubjectFilter() {
+    const box = document.getElementById('subjectFilter');
+    box.innerHTML = '';
+    SUBJECTS.forEach(name => {
+        const label = document.createElement('label');
+        label.className = 'subject-chip' + (subjectChecked.has(name) ? '' : ' off');
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.checked = subjectChecked.has(name);
+        cb.onchange = async () => {
+            if (cb.checked) subjectChecked.add(name); else subjectChecked.delete(name);
+            label.classList.toggle('off', !cb.checked);
+            await renderCalendar();
+            await renderDetail(selectedDateKey);
+        };
+        label.appendChild(cb);
+        label.appendChild(document.createTextNode(name));
+        box.appendChild(label);
+    });
+}
+// 가운데에 큰 질문을 띄우는 확인창 (확인 true / 취소 false)
+function askConfirm(title, detail, yesText, noText) {
+    return new Promise(resolve => {
+        const modal = document.getElementById('confirmModal');
+        const yes = document.getElementById('confirmYes');
+        const no = document.getElementById('confirmNo');
+        document.getElementById('confirmTitle').textContent = title;
+        document.getElementById('confirmDetail').textContent = detail || '';
+        yes.textContent = yesText || '네';
+        no.textContent = noText || '아니요';
+        const done = (v) => { modal.style.display = 'none'; yes.onclick = no.onclick = modal.onclick = null; resolve(v); };
+        yes.onclick = () => done(true);
+        no.onclick = () => done(false);
+        modal.onclick = (e) => { if (e.target === modal) done(false); };
+        modal.style.display = 'flex';
+    });
 }
 function fmtMin(m) {
     const h = Math.floor(m / 60), r = m % 60;
@@ -661,7 +758,7 @@ let trashCache = {};
 function newId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
 async function cancelSession(dateStr, idx, label) {
     if (!syncReady) { alert('저장소에 연결되지 않아 취소할 수 없어요.'); return; }
-    if (!confirm(`${label}\n\n이 공부 기록을 취소할까요?\n뽀모도로 횟수도 1회 줄어요.\n(취소한 기록은 휴지통에서 되살릴 수 있어요)`)) return;
+    if (!await askConfirm('이 공부 기록을 취소할까요?', `${label}\n뽀모도로 횟수도 1회 줄어요. (휴지통에서 되살릴 수 있어요)`)) return;
     const data = await getData();
     const d = data[dateStr];
     if (!d) return;
@@ -694,11 +791,13 @@ function trashItems() {
         .sort((a, b) => (b.deletedAt || 0) - (a.deletedAt || 0));
 }
 function updateTrashBtn() {
-    document.getElementById('trashBtn').textContent = `🗑 휴지통 (${trashItems().length})`;
+    const n = trashItems().length;
+    document.querySelectorAll('.trash-open-btn').forEach(b => { b.textContent = `🗑 휴지통 (${n})`; });
 }
 function trashLabel(t) {
-    if (t.legacy) return `${formatNoYear(t.date)} · 시간 기록 없음 (이전 기록) 1회`;
-    return `${formatNoYear(t.date)} ${t.start} ~ ${t.end} · ${t.subject || '과목 미지정'} (${fmtMin(t.min || 25)})`;
+    if (t.type === 'task') return `📝 할 일 · ${dateLabel(t.date)} ${t.period || 1}교시까지 · ${t.text}${t.done ? ' (완료됨)' : ''}`;
+    if (t.legacy) return `📚 공부 기록 · ${formatNoYear(t.date)} · 시간 기록 없음 (이전 기록) 1회`;
+    return `📚 공부 기록 · ${formatNoYear(t.date)} ${t.start} ~ ${t.end} · ${t.subject || '과목 미지정'} (${fmtMin(t.min || 25)})`;
 }
 function renderTrash() {
     const ul = document.getElementById('trashList');
@@ -748,7 +847,14 @@ function openTrash() {
 async function restoreTrash(id) {
     const t = trashCache[id];
     if (!t || !syncReady) return;
-    let data = await getData();
+    if (t.type === 'task') {                                   // 지웠던 할 일 되살리기
+        try {
+            await baseRef.child('pomodoro_tasks/' + (t.taskId || newId())).set({ date: t.date, period: t.period || 1, text: t.text, done: !!t.done });
+            await baseRef.child('pomodoro_trash/' + id).remove();
+        } catch (e) { console.error(e); alert('되살리지 못했어요. 다시 시도해 주세요.'); }
+        return;
+    }
+    let data = await getData();                                // 취소했던 공부 기록 되살리기
     data = initDayData(data, t.date);
     const d = data[t.date];
     d.pomo += 1;
@@ -782,14 +888,16 @@ async function renderDetail(dateStr) {
     const data = await getData();
     const day = data[dateStr] || { pomo: 0, memos: [], sessions: [] };
     document.getElementById('detailBox').style.display = 'block';
-    document.getElementById('detailDate').textContent = `${formatNoYear(dateStr)} (뽀모도로 ${day.pomo}회)`;
-    document.getElementById('detailTotal').textContent = `공부 시간 ${fmtMin(dayStudyMin(day))}`;
+    const st = dayStats(day);
+    document.getElementById('detailDate').textContent = `${formatNoYear(dateStr)} (뽀모도로 ${st.count}회)`;
+    document.getElementById('detailTotal').textContent = `공부 시간 ${fmtMin(st.min)}` + (isAllChecked() ? '' : ' · 선택한 과목만');
 
     // 공부 기록: 몇 시~몇 시에 어떤 과목 (✕로 취소 가능)
     const sessionList = document.getElementById('sessionList');
     sessionList.innerHTML = '';
     const sessions = day.sessions
         .map((s, i) => ({ s, i }))
+        .filter(({ s }) => subjectChecked.has(subjectOf(s)))
         .sort((a, b) => String(a.s.start).localeCompare(String(b.s.start)));
     sessions.forEach(({ s, i }) => {
         const li = document.createElement('li');
@@ -801,7 +909,7 @@ async function renderDetail(dateStr) {
         li.appendChild(makeCancelBtn(() => cancelSession(dateStr, i, `${formatNoYear(dateStr)} ${s.start} ~ ${s.end} · ${s.subject || '과목 미지정'}`)));
         sessionList.appendChild(li);
     });
-    const legacy = day.pomo - day.sessions.length;   // 시간 기록 기능 이전에 쌓인 횟수
+    const legacy = isAllChecked() ? day.pomo - day.sessions.length : 0;   // 시간 기록 기능 이전에 쌓인 횟수(과목 모름)
     if (legacy > 0) {
         const li = document.createElement('li');
         li.appendChild(document.createTextNode(`시간 기록 없음 · ${legacy}회 (이전 기록)`));
@@ -809,7 +917,7 @@ async function renderDetail(dateStr) {
         sessionList.appendChild(li);
     }
     if (sessionList.children.length === 0) {
-        sessionList.innerHTML = '<li>공부 기록이 없습니다.</li>';
+        sessionList.innerHTML = isAllChecked() ? '<li>공부 기록이 없습니다.</li>' : '<li>선택한 과목의 공부 기록이 없습니다.</li>';
     }
 
     // 딴생각 메모
@@ -845,6 +953,7 @@ async function renderCalendar() {
         div.className = 'day-cell empty';
         grid.appendChild(div);
     }
+    let monthCount = 0, monthMin = 0;
     for (let d = 1; d <= lastDate; d++) {
         const dayStr = `${year}-${pad2(month + 1)}-${pad2(d)}`;
         const dayData = data[dayStr] || { pomo: 0, sessions: [] };
@@ -852,13 +961,19 @@ async function renderCalendar() {
         div.className = 'day-cell' + (dayStr === selectedDateKey ? ' selected' : '');
         div.onclick = () => selectDate(dayStr);
         let html = `<span>${d}</span>`;
-        if (dayData.pomo > 0) {
-            html += `<span class="pomo-badge">🍅${dayData.pomo}</span>`;
-            html += `<span class="study-time">${fmtMinShort(dayStudyMin(dayData))}</span>`;
+        const st = dayStats(dayData);
+        monthCount += st.count;
+        monthMin += st.min;
+        if (st.count > 0) {
+            html += `<span class="pomo-badge">🍅${st.count}</span>`;
+            html += `<span class="study-time">${fmtMinShort(st.min)}</span>`;
         }
         div.innerHTML = html;
         grid.appendChild(div);
     }
+    const excluded = SUBJECTS.filter(x => !subjectChecked.has(x));
+    document.getElementById('monthSummary').textContent =
+        `${month + 1}월 합계: ${fmtMin(monthMin)} · 🍅${monthCount}회` + (excluded.length ? `\n제외한 과목: ${excluded.join(', ')}` : '');
 }
 
 // ── 할 일 기록 (며칠 몇 교시까지 무엇을 할지) ──
@@ -881,12 +996,141 @@ function toggleTask(id, done) {
     if (!syncReady) return;
     baseRef.child('pomodoro_tasks/' + id + '/done').set(done).catch(e => console.error(e));
 }
-function deleteTask(id) {
-    if (!syncReady) return;
-    baseRef.child('pomodoro_tasks/' + id).remove().catch(e => console.error(e));
+async function deleteTask(id) {                              // 지우지 않고 휴지통으로 보냄
+    const t = tasksCache[id];
+    if (!syncReady || !t) return;
+    try {
+        await baseRef.child('pomodoro_trash/' + newId()).set({ type: 'task', taskId: id, date: t.date, period: t.period || 1, text: t.text, done: !!t.done, deletedAt: Date.now() });
+        await baseRef.child('pomodoro_tasks/' + id).remove();   // 휴지통에 들어간 뒤에만 지움
+    } catch (e) {
+        console.error(e);
+        alert('휴지통으로 옮기지 못해서 지우지 않았어요. 다시 시도해 주세요.');
+    }
+}
+
+function dateLabel(key) {
+    const [y, mo, d] = String(key).split('-').map(Number);
+    return `${mo}월 ${d}일 (${DAY_NAMES[new Date(y, mo - 1, d).getDay()]})`;
+}
+function setTaskDate(key) {
+    document.getElementById('taskDate').value = key;
+    document.getElementById('taskDateBtn').textContent = '📅 ' + dateLabel(key);
+}
+async function chooseTaskDate() {
+    const v = await pickDate(document.getElementById('taskDate').value);
+    if (v) setTaskDate(v);
+}
+// 큰 달력으로 날짜 고르기 (고른 날짜 'YYYY-MM-DD' 또는 닫으면 null)
+function pickDate(initialKey) {
+    return new Promise(resolve => {
+        const modal = document.getElementById('datePickModal');
+        const grid = document.getElementById('datePickGrid');
+        const todayKey = getTodayKey();
+        const [iy, im] = String(initialKey || todayKey).split('-').map(Number);
+        const view = new Date(iy, im - 1, 1);
+        const done = (v) => { modal.style.display = 'none'; modal.onclick = null; resolve(v); };
+        const draw = () => {
+            const y = view.getFullYear(), m = view.getMonth();
+            document.getElementById('datePickTitle').textContent = `${y}년 ${m + 1}월`;
+            grid.innerHTML = '';
+            DAY_NAMES.forEach(n => {
+                const div = document.createElement('div');
+                div.className = 'day-name';
+                div.textContent = n;
+                grid.appendChild(div);
+            });
+            const first = new Date(y, m, 1).getDay();
+            const last = new Date(y, m + 1, 0).getDate();
+            for (let i = 0; i < first; i++) {
+                const div = document.createElement('div');
+                div.className = 'day-cell empty';
+                grid.appendChild(div);
+            }
+            for (let d = 1; d <= last; d++) {
+                const key = `${y}-${pad2(m + 1)}-${pad2(d)}`;
+                const div = document.createElement('div');
+                div.className = 'day-cell' + (key === initialKey ? ' selected' : '') + (key === todayKey ? ' today' : '');
+                div.textContent = d;
+                div.onclick = () => done(key);
+                grid.appendChild(div);
+            }
+        };
+        document.getElementById('datePickPrev').onclick = () => { view.setMonth(view.getMonth() - 1); draw(); };
+        document.getElementById('datePickNext').onclick = () => { view.setMonth(view.getMonth() + 1); draw(); };
+        document.getElementById('datePickToday').onclick = () => done(todayKey);
+        document.getElementById('datePickClose').onclick = () => done(null);
+        modal.onclick = (e) => { if (e.target === modal) done(null); };
+        draw();
+        modal.style.display = 'flex';
+    });
+}
+
+// ── 할 일 수정: 날짜 줄을 두 번 누르면(마우스 더블클릭/터치 두 번 탭) 날짜·교시 변경 ──
+let editDraft = null;                 // 수정 중인 할 일 { id, date, period }
+let lastTapId = null, lastTapAt = 0;
+function onWhenTap(id) {
+    const now = Date.now();
+    if (lastTapId === id && now - lastTapAt < 400) {
+        lastTapId = null; lastTapAt = 0;
+        const t = tasksCache[id];
+        if (!t) return;
+        editDraft = { id, date: t.date, period: Number(t.period) || 1 };
+        renderTasks();
+    } else {
+        lastTapId = id; lastTapAt = now;
+    }
+}
+function saveEditTask() {
+    if (!editDraft || !syncReady) return;
+    const { id, date, period } = editDraft;
+    editDraft = null;
+    baseRef.child('pomodoro_tasks/' + id).update({ date, period }).catch(e => console.error('수정 실패:', e));
+    renderTasks();
+}
+function cancelEditTask() { editDraft = null; renderTasks(); }
+function buildTaskEditForm() {
+    const form = document.createElement('div');
+    form.className = 'task-edit';
+    const row1 = document.createElement('div');
+    row1.className = 'task-form-row';
+    const dateBtn = document.createElement('button');
+    dateBtn.className = 'task-input date-btn';
+    dateBtn.textContent = '📅 ' + dateLabel(editDraft.date);
+    dateBtn.onclick = async () => {
+        const v = await pickDate(editDraft && editDraft.date);
+        if (v && editDraft) { editDraft.date = v; dateBtn.textContent = '📅 ' + dateLabel(v); }
+    };
+    const sel = document.createElement('select');
+    sel.className = 'task-select';
+    for (let i = 1; i <= 7; i++) {
+        const o = document.createElement('option');
+        o.value = i;
+        o.textContent = `${i}교시`;
+        sel.appendChild(o);
+    }
+    sel.value = editDraft.period;
+    sel.onchange = () => { if (editDraft) editDraft.period = Number(sel.value); };
+    row1.appendChild(dateBtn);
+    row1.appendChild(sel);
+    const row2 = document.createElement('div');
+    row2.className = 'task-form-row';
+    const save = document.createElement('button');
+    save.className = 'btn-add';
+    save.textContent = '저장';
+    save.onclick = saveEditTask;
+    const cancel = document.createElement('button');
+    cancel.className = 'btn-add btn-cancel-edit';
+    cancel.textContent = '취소';
+    cancel.onclick = cancelEditTask;
+    row2.appendChild(save);
+    row2.appendChild(cancel);
+    form.appendChild(row1);
+    form.appendChild(row2);
+    return form;
 }
 function renderTasks() {
     const ul = document.getElementById('taskList');
+    if (editDraft && !tasksCache[editDraft.id]) editDraft = null;   // 다른 기기에서 지워졌으면 수정 종료
     const items = Object.keys(tasksCache)
         .map(id => Object.assign({ id }, tasksCache[id]))
         .filter(t => t && t.date && t.text);
@@ -915,18 +1159,24 @@ function renderTasks() {
         cb.onchange = () => toggleTask(t.id, cb.checked);
         const body = document.createElement('div');
         body.className = 'task-body';
-        const when = document.createElement('div');
-        when.className = 'task-when';
-        when.textContent = `${mo}월 ${d}일(${DAY_NAMES[target.getDay()]}) ${t.period}교시까지 · ${dday}`;
         const text = document.createElement('div');
         text.className = 'task-text';
         text.textContent = t.text;
-        body.appendChild(when);
+        if (editDraft && editDraft.id === t.id) {
+            body.appendChild(buildTaskEditForm());
+        } else {
+            const when = document.createElement('div');
+            when.className = 'task-when';
+            when.title = '두 번 누르면 날짜·교시를 바꿀 수 있어요';
+            when.textContent = `${mo}월 ${d}일(${DAY_NAMES[target.getDay()]}) ${t.period}교시까지 · ${dday}`;
+            when.onclick = () => onWhenTap(t.id);
+            body.appendChild(when);
+        }
         body.appendChild(text);
         const del = document.createElement('button');
         del.className = 'btn-del';
         del.textContent = '✕';
-        del.title = '삭제';
+        del.title = '삭제 (휴지통으로 이동)';
         del.onclick = () => deleteTask(t.id);
         li.appendChild(cb);
         li.appendChild(body);
@@ -1151,7 +1401,7 @@ async function updateViews() {
 }
 
 // 초기 로드
-document.getElementById('taskDate').value = getTodayKey();
+setTaskDate(getTodayKey());
 document.getElementById('pomoDuration').value = focusMin;
 updateTimerDisplay();
 (async () => {
