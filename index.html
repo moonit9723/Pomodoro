@@ -47,8 +47,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .session-del:hover { background: #ff4d4d; color: #fff; }
 .modal-content.modal-wide { max-width: 560px; width: 94%; max-height: 90vh; }
 .detail-total { color: #94a3b8; font-size: 0.78rem; font-weight: 600; margin-bottom: 4px; }
-.trash-btn { width: 100%; margin-top: 12px; background: transparent; border: 1px dashed #1e4a55; color: #94a3b8; padding: 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
-.trash-btn:hover { color: #00f3ff; border-color: #00f3ff; }
 .trash-list { list-style: none; padding: 0; margin: 0 0 10px; display: flex; flex-direction: column; gap: 6px; }
 .trash-item { background: #080c10; border: 1px solid #1e293b; border-radius: 8px; padding: 8px 10px; font-size: 0.8rem; color: #e2e8f0; }
 .trash-meta { color: #64748b; font-size: 0.7rem; margin-top: 2px; }
@@ -84,6 +82,44 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .datepick-grid .day-cell:hover { border-color: #00f3ff; }
 .datepick-grid .day-cell.today { border-color: #ffb347; color: #ffb347; }
 .datepick-grid .day-cell.selected { color: #00f3ff; }
+.app-grid { width: 100%; display: flex; justify-content: center; }
+.top-actions { display: flex; align-items: center; gap: 2px; }
+.btn-row { display: flex; flex-wrap: wrap; gap: 8px; width: 100%; }
+.btn-row .btn-thief { flex: 1 1 45%; }
+.trash-note { font-size: 0.72rem; color: #64748b; text-align: center; margin: -6px 0 12px; }
+.trash-cols { display: grid; grid-template-columns: 1fr; gap: 14px; margin-bottom: 10px; }
+.trash-col-title { font-size: 0.85rem; font-weight: 800; color: #00f3ff; margin-bottom: 6px; }
+.confirm-gray { color: #94a3b8; border: 1.5px solid #1e293b; }
+@media (min-width: 900px) {
+    body { justify-content: flex-start; padding: 16px; }
+    .app-grid { display: grid; grid-template-columns: 1fr 1.25fr 1fr; grid-template-areas: "timer tasks memo"; gap: 16px; height: calc(100vh - 32px); max-width: 1600px; margin: 0 auto; }
+    .page, .page.active, .container { display: contents !important; }
+    .only-mobile, .upcoming-card { display: none !important; }
+    .app-grid .card { min-height: 0; overflow-y: auto; }
+    .container > .card { grid-area: timer; justify-content: center; }
+    .container > .memo-section { grid-area: memo; margin-top: 0; justify-content: flex-start; }
+    #app-tasks > .card { grid-area: tasks; align-items: stretch; }
+    .container > .card .top-bar { margin-bottom: auto; }
+    .container > .card .btn-row { margin-top: auto; }
+    .timer-display { font-size: clamp(4rem, 9vw, 8rem); margin: 10px 0 14px; }
+    .timer-status { font-size: 0.95rem; }
+    .subject-select { font-size: 1rem; padding: 10px; }
+    .btn-start { font-size: 1.25rem; padding: 16px; }
+    .btn-reset-small { font-size: 0.85rem; padding: 8px; }
+    .btn-row .btn-thief { margin-top: 12px; }
+    .memo-list { max-height: none; flex: 1; min-height: 0; overflow-y: auto; }
+    #app-tasks .task-list { flex: 1; min-height: 0; overflow-y: auto; }
+    .btn-install { position: fixed; right: 16px; bottom: 16px; width: auto; padding: 8px 14px; background: #0f171e; z-index: 50; }
+    .modal-content.modal-wide { max-width: 1100px; width: 92%; max-height: 92vh; display: grid; grid-template-columns: 1.4fr 1fr; column-gap: 24px; align-content: start; }
+    .modal-wide > * { grid-column: 1; }
+    .modal-wide .detail-box { grid-column: 2; grid-row: 1 / span 5; margin-top: 0; border-top: none; border-left: 1px solid #1e293b; padding: 0 0 0 20px; font-size: 0.95rem; }
+    .modal-wide .calendar-grid { font-size: 0.95rem; }
+    .modal-wide .day-cell { min-height: 84px; }
+    .modal-wide .pomo-badge { font-size: 0.9rem; }
+    .modal-wide .study-time { font-size: 0.8rem; }
+    .modal-content.trash-wide { max-width: 860px; }
+    .trash-cols { grid-template-columns: 1fr 1fr; }
+}
 .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); backdrop-filter: blur(3px); z-index: 100; justify-content: center; align-items: center; }
 .modal-content { background: #0f171e; border: 1px solid #00f3ff; box-shadow: 0 0 15px rgba(0,243,255,0.2); border-radius: 14px; padding: 20px 16px 16px; width: 90%; max-width: 380px; max-height: 85vh; overflow-y: auto; position: relative; }
 .modal-close { position: absolute; top: 6px; right: 8px; z-index: 20; background: none; border: none; color: #94a3b8; font-size: 1.1rem; cursor: pointer; }
@@ -121,8 +157,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .task-list { width: 100%; list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
 .task-item { display: flex; align-items: center; gap: 8px; background: #080c10; border: 1px solid #1e293b; border-radius: 8px; padding: 8px 10px; }
 .task-item.overdue { border-color: #5b2a35; }
-.task-item.done .task-text { text-decoration: line-through; color: #64748b; }
-.task-item.done .task-when { color: #64748b; }
 .task-check { accent-color: #00f3ff; cursor: pointer; flex: 0 0 auto; }
 .task-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .task-when { font-size: 0.72rem; color: #00f3ff; font-weight: 700; cursor: pointer; touch-action: manipulation; user-select: none; }
@@ -155,12 +189,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 </style>
 </head>
 <body>
+<div class="app-grid">
 <div id="app-timer" class="page active">
   <div class="container">
     <div class="upcoming-card" id="upcomingBox" style="display: none;">
       <div class="upcoming-head">
         <div class="upcoming-title">⏰ 임박한 할 일</div>
-        <button class="upcoming-more" onclick="switchPage('app-tasks')">전체 보기 ›</button>
+        <button class="upcoming-more only-mobile" onclick="switchPage('app-tasks')">전체 보기 ›</button>
       </div>
       <ul class="upcoming-list" id="upcomingList"></ul>
     </div>
@@ -168,7 +203,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
       <div class="top-bar">
         <button class="icon-btn" onclick="openModal('calendarModal')" title="달력 보기">📅</button>
         <div class="pomo-count-text">오늘 성공: <span class="count-num" id="todayPomo">0</span>회</div>
-        <button class="icon-btn" onclick="switchPage('app-tasks')" title="할 일 기록">📝</button>
+        <div class="top-actions">
+          <button class="icon-btn" onclick="openTrash()" title="휴지통">🗑</button>
+          <button class="icon-btn only-mobile" onclick="switchPage('app-tasks')" title="할 일 기록">📝</button>
+        </div>
       </div>
       <select id="pomoSubject" class="subject-select">
         <option value="독서와 작문">독서와 작문</option>
@@ -188,9 +226,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
       <div class="timer-display" id="timer">25:00</div>
       <div class="timer-status" id="timerStatus"></div>
       <button class="btn-start" onclick="startTimer()">시작</button>
-      <button class="btn-thief" onclick="showThiefRank()">내 집중력 도둑은? 🔍</button>
-      <button class="btn-thief" onclick="runCheck()">상태 확인 🔧</button>
-      <button class="btn-thief trash-open-btn" onclick="openTrash()">🗑 휴지통 (0)</button>
+      <button class="btn-reset-small" onclick="resetTimer()">초기화</button>
+      <div class="btn-row">
+        <button class="btn-thief" onclick="showThiefRank()">🔍 집중력 도둑</button>
+        <button class="btn-thief" onclick="runCheck()">🔧 상태 확인</button>
+        <button class="btn-thief" onclick="changeStorage()">🔗 저장소 바꾸기</button>
+      </div>
     </div>
     <div class="card memo-section">
       <div class="input-box">
@@ -198,7 +239,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
         <button class="btn-add" onclick="addWish()">적기</button>
       </div>
       <ul class="memo-list" id="memoList"></ul>
-      <button class="btn-reset-small" onclick="resetTimer()">초기화</button>
     </div>
     <button class="btn-install" id="installBtn" style="display: none;" onclick="installApp()">📲 앱으로 설치</button>
   </div>
@@ -207,8 +247,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 <div id="app-tasks" class="page">
   <div class="card">
     <div class="page-header">
-      <button class="btn-back" onclick="switchPage('app-timer')">← 타이머로 돌아가기</button>
+      <button class="btn-back only-mobile" onclick="switchPage('app-timer')">← 타이머</button>
       <div class="page-title">할 일 기록 📝</div>
+      <div class="top-actions">
+        <button class="icon-btn" onclick="openModal('archiveModal')" title="다 한 일 보관소">📦</button>
+        <button class="icon-btn" onclick="openTrash()" title="휴지통">🗑</button>
+      </div>
     </div>
     <div class="task-form">
       <div class="task-form-row">
@@ -232,8 +276,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     </div>
     <div class="task-hint">날짜 줄을 두 번 누르면 날짜·교시를 바꿀 수 있어요.</div>
     <ul class="task-list" id="taskList"></ul>
-    <button class="trash-btn trash-open-btn" onclick="openTrash()">🗑 휴지통 (0)</button>
   </div>
+</div>
 </div>
 
 <div class="modal-overlay" id="calendarModal">
@@ -273,6 +317,24 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
   </div>
 </div>
 
+<div class="modal-overlay" id="archiveModal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeModal('archiveModal')">✕</button>
+    <div class="thief-title">다 한 일 보관소 📦</div>
+    <ul class="trash-list" id="archiveList"></ul>
+  </div>
+</div>
+<div class="modal-overlay" id="inputModal" style="z-index: 200;">
+  <div class="modal-content confirm-box">
+    <div class="confirm-title" id="inputTitle" style="font-size: 1.25rem;"></div>
+    <div class="confirm-detail" id="inputDetail"></div>
+    <input type="text" id="inputField" class="task-input" style="width: 100%; margin-bottom: 14px; text-align: center;">
+    <div class="confirm-actions">
+      <button class="confirm-gray" id="inputNo">취소</button>
+      <button class="confirm-no" id="inputYes">바꾸기</button>
+    </div>
+  </div>
+</div>
 <div class="modal-overlay" id="datePickModal" style="z-index: 200;">
   <div class="modal-content datepick-box">
     <button class="modal-close" id="datePickClose">✕</button>
@@ -296,10 +358,14 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
   </div>
 </div>
 <div class="modal-overlay" id="trashModal">
-  <div class="modal-content">
+  <div class="modal-content trash-wide">
     <button class="modal-close" onclick="closeModal('trashModal')">✕</button>
     <div class="thief-title">휴지통 🗑</div>
-    <ul class="trash-list" id="trashList"></ul>
+    <div class="trash-note">지운 기록은 14일 동안 보관되고, 그 뒤 자동으로 비워져요.</div>
+    <div class="trash-cols">
+      <div class="trash-col"><div class="trash-col-title" id="trashStudyTitle"></div><ul class="trash-list" id="trashStudyList"></ul></div>
+      <div class="trash-col"><div class="trash-col-title" id="trashTaskTitle"></div><ul class="trash-list" id="trashTaskList"></ul></div>
+    </div>
     <button class="btn-recheck" id="trashEmptyBtn" onclick="emptyTrash()">휴지통 비우기</button>
   </div>
 </div>
@@ -309,7 +375,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
 // 코드를 고칠 때마다 이 버전 문자열을 바꿔서 올리면, '상태 확인'에서 새 버전 반영 여부를 알 수 있어요
-const APP_VERSION = '2026-10-21-g';
+const APP_VERSION = '2026-10-21-h';
 
 // ── 데이터 저장: Firebase Realtime Database (어느 기기에서 열어도 같은 데이터) ──
 const SYNC_CONFIG = {
@@ -348,11 +414,12 @@ async function initCloudSync() {
             tasksCache = snap.val() || {};
             renderTasks();
             renderUpcoming();
+            renderArchive();
         });
         // 취소한 기록(휴지통)
         baseRef.child('pomodoro_trash').on('value', (snap) => {
             trashCache = snap.val() || {};
-            updateTrashBtn();
+            purgeExpiredTrash();
             renderTrash();
         });
         // 창을 새로 열 때(또는 다른 기기에서) 저장된 종료 시각을 즉시 반영
@@ -440,9 +507,7 @@ function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
 // ── 타이머: '종료 시각(endAt)'을 db에 저장해두고 현재 시각과 비교해 남은 시간을 계산 ──
 const BREAK_MIN = 5;
-const DURATIONS = [10, 15, 20, 25, 30];
-const savedMin = Number(localStorage.getItem('pomodoro_focus_min'));
-let focusMin = DURATIONS.includes(savedMin) ? savedMin : 25;   // 내가 고른 집중 시간(분)
+let focusMin = 25;   // 기본 25분 (고른 시간은 저장하지 않아서, 앱을 다시 열거나 초기화하면 25분으로 돌아와요)
 let timeLeft = focusMin * 60;
 let timerEndAt = null;
 let timerSubjectAtStart = null;
@@ -468,7 +533,6 @@ function runningStatusText() {
 function changeDuration() {
     if (timerEndAt != null) return;
     focusMin = Number(document.getElementById('pomoDuration').value);
-    localStorage.setItem('pomodoro_focus_min', focusMin);
     timerDurationMin = focusMin;
     timeLeft = focusMin * 60;
     updateTimerDisplay();
@@ -567,6 +631,7 @@ async function startTimer(mode) {
     }
 }
 async function resetTimer() {
+    focusMin = 25;
     resetLocalTimer();
     if (syncReady) {
         try { await baseRef.child('pomodoro_timer').remove(); } catch (e) {}
@@ -725,6 +790,36 @@ function renderSubjectFilter() {
         box.appendChild(label);
     });
 }
+// 글자를 입력받는 창 (입력값 또는 닫으면 null)
+function askInput(title, detail, value) {
+    return new Promise(resolve => {
+        const modal = document.getElementById('inputModal');
+        const field = document.getElementById('inputField');
+        const yes = document.getElementById('inputYes');
+        const no = document.getElementById('inputNo');
+        document.getElementById('inputTitle').textContent = title;
+        document.getElementById('inputDetail').textContent = detail || '';
+        field.value = value || '';
+        const done = (v) => { modal.style.display = 'none'; yes.onclick = no.onclick = modal.onclick = field.onkeydown = null; resolve(v); };
+        yes.onclick = () => done(field.value);
+        no.onclick = () => done(null);
+        modal.onclick = (e) => { if (e.target === modal) done(null); };
+        field.onkeydown = (e) => { if (e.key === 'Enter') done(field.value); };
+        modal.style.display = 'flex';
+        field.focus();
+        field.select();
+    });
+}
+// 저장소 연결 바꾸기: 동기화 코드를 새로 입력해서 그 코드의 기록으로 연결 (이전 기록은 그대로 남아 있음)
+async function changeStorage() {
+    const cur = localStorage.getItem(SYNC_ID_KEY) || '';
+    const v = await askInput('저장소 연결 바꾸기',
+        `지금 동기화 코드: ${cur || '없음'}\n새 코드를 넣으면 그 코드의 기록으로 바뀌어요.\n(이전 기록은 지워지지 않고, 예전 코드를 다시 넣으면 돌아와요)`, cur);
+    const code = (v || '').trim();
+    if (!code || code === cur) return;
+    localStorage.setItem(SYNC_ID_KEY, code);
+    location.reload();
+}
 // 가운데에 큰 질문을 띄우는 확인창 (확인 true / 취소 false)
 function askConfirm(title, detail, yesText, noText) {
     return new Promise(resolve => {
@@ -784,61 +879,75 @@ async function cancelSession(dateStr, idx, label) {
     await saveData(data);
     await updateViews();
 }
+const TRASH_MS = 14 * 24 * 60 * 60 * 1000;               // 휴지통 보관 기간: 14일
 function trashItems() {
+    const now = Date.now();
     return Object.keys(trashCache)
         .map(id => Object.assign({ id }, trashCache[id]))
-        .filter(t => t && t.date)
+        .filter(t => t && t.date && !(t.deletedAt && now - t.deletedAt > TRASH_MS))
         .sort((a, b) => (b.deletedAt || 0) - (a.deletedAt || 0));
 }
-function updateTrashBtn() {
-    const n = trashItems().length;
-    document.querySelectorAll('.trash-open-btn').forEach(b => { b.textContent = `🗑 휴지통 (${n})`; });
+function purgeExpiredTrash() {                               // 14일 지난 것을 한 번에 비움
+    if (!syncReady) return;
+    const now = Date.now(), upd = {};
+    Object.keys(trashCache).forEach(id => {
+        const t = trashCache[id];
+        if (t && t.deletedAt && now - t.deletedAt > TRASH_MS) upd[id] = null;
+    });
+    if (Object.keys(upd).length) baseRef.child('pomodoro_trash').update(upd).catch(e => console.error(e));
 }
 function trashLabel(t) {
     if (t.type === 'task') return `📝 할 일 · ${dateLabel(t.date)} ${t.period || 1}교시까지 · ${t.text}${t.done ? ' (완료됨)' : ''}`;
     if (t.legacy) return `📚 공부 기록 · ${formatNoYear(t.date)} · 시간 기록 없음 (이전 기록) 1회`;
     return `📚 공부 기록 · ${formatNoYear(t.date)} ${t.start} ~ ${t.end} · ${t.subject || '과목 미지정'} (${fmtMin(t.min || 25)})`;
 }
-function renderTrash() {
-    const ul = document.getElementById('trashList');
-    const items = trashItems();
+function trashRow(t) {
+    const li = document.createElement('li');
+    li.className = 'trash-item';
+    const main = document.createElement('div');
+    main.textContent = trashLabel(t);
+    li.appendChild(main);
+    if (t.deletedAt) {
+        const dd = new Date(t.deletedAt);
+        const left = Math.max(1, Math.ceil((t.deletedAt + TRASH_MS - Date.now()) / 86400000));
+        const meta = document.createElement('div');
+        meta.className = 'trash-meta';
+        meta.textContent = `${t.type === 'task' ? '지운' : '취소한'} 때: ${dd.getMonth() + 1}월 ${dd.getDate()}일 ${hhmm(dd)} · ${left}일 뒤 자동 삭제`;
+        li.appendChild(meta);
+    }
+    const actions = document.createElement('div');
+    actions.className = 'trash-actions';
+    const rb = document.createElement('button');
+    rb.className = 'trash-restore';
+    rb.textContent = '↩ 되살리기';
+    rb.onclick = () => restoreTrash(t.id);
+    const pb = document.createElement('button');
+    pb.className = 'trash-purge';
+    pb.textContent = '완전 삭제';
+    pb.onclick = () => purgeTrash(t.id);
+    actions.appendChild(rb);
+    actions.appendChild(pb);
+    li.appendChild(actions);
+    return li;
+}
+function fillTrash(ulId, titleId, title, items) {
+    document.getElementById(titleId).textContent = `${title} (${items.length})`;
+    const ul = document.getElementById(ulId);
     ul.innerHTML = '';
-    document.getElementById('trashEmptyBtn').style.display = items.length ? 'block' : 'none';
     if (items.length === 0) {
         const li = document.createElement('li');
         li.className = 'task-empty';
-        li.textContent = '휴지통이 비어 있어요.';
+        li.textContent = '비어 있어요.';
         ul.appendChild(li);
         return;
     }
-    items.forEach(t => {
-        const li = document.createElement('li');
-        li.className = 'trash-item';
-        const main = document.createElement('div');
-        main.textContent = trashLabel(t);
-        li.appendChild(main);
-        if (t.deletedAt) {
-            const dd = new Date(t.deletedAt);
-            const meta = document.createElement('div');
-            meta.className = 'trash-meta';
-            meta.textContent = `취소한 때: ${dd.getMonth() + 1}월 ${dd.getDate()}일 ${hhmm(dd)}`;
-            li.appendChild(meta);
-        }
-        const actions = document.createElement('div');
-        actions.className = 'trash-actions';
-        const rb = document.createElement('button');
-        rb.className = 'trash-restore';
-        rb.textContent = '↩ 되살리기';
-        rb.onclick = () => restoreTrash(t.id);
-        const pb = document.createElement('button');
-        pb.className = 'trash-purge';
-        pb.textContent = '완전 삭제';
-        pb.onclick = () => purgeTrash(t.id);
-        actions.appendChild(rb);
-        actions.appendChild(pb);
-        li.appendChild(actions);
-        ul.appendChild(li);
-    });
+    items.forEach(t => ul.appendChild(trashRow(t)));
+}
+function renderTrash() {
+    const items = trashItems();
+    fillTrash('trashStudyList', 'trashStudyTitle', '📚 공부 기록', items.filter(t => t.type !== 'task'));
+    fillTrash('trashTaskList', 'trashTaskTitle', '📝 할 일', items.filter(t => t.type === 'task'));
+    document.getElementById('trashEmptyBtn').style.display = items.length ? 'block' : 'none';
 }
 function openTrash() {
     renderTrash();
@@ -992,9 +1101,51 @@ function addTask() {
         .catch(e => console.error('저장 실패:', e));
     textEl.value = '';
 }
-function toggleTask(id, done) {
+function toggleTask(id, done) {                              // 체크하면 '다 한 일 보관소'로, 해제하면 다시 할 일로
     if (!syncReady) return;
-    baseRef.child('pomodoro_tasks/' + id + '/done').set(done).catch(e => console.error(e));
+    baseRef.child('pomodoro_tasks/' + id).update({ done: !!done, doneAt: done ? Date.now() : null }).catch(e => console.error(e));
+}
+function renderArchive() {
+    const ul = document.getElementById('archiveList');
+    const items = Object.keys(tasksCache)
+        .map(id => Object.assign({ id }, tasksCache[id]))
+        .filter(t => t && t.done && t.text)
+        .sort((a, b) => (b.doneAt || 0) - (a.doneAt || 0));
+    ul.innerHTML = '';
+    if (items.length === 0) {
+        const li = document.createElement('li');
+        li.className = 'task-empty';
+        li.textContent = '아직 끝낸 일이 없어요.';
+        ul.appendChild(li);
+        return;
+    }
+    items.forEach(t => {
+        const li = document.createElement('li');
+        li.className = 'trash-item';
+        const main = document.createElement('div');
+        main.textContent = '✅ ' + t.text;
+        const meta = document.createElement('div');
+        meta.className = 'trash-meta';
+        let info = `${dateLabel(t.date)} ${t.period || 1}교시까지`;
+        if (t.doneAt) { const dd = new Date(t.doneAt); info += ` · 완료: ${dd.getMonth() + 1}월 ${dd.getDate()}일`; }
+        meta.textContent = info;
+        const actions = document.createElement('div');
+        actions.className = 'trash-actions';
+        const rb = document.createElement('button');
+        rb.className = 'trash-restore';
+        rb.textContent = '↩ 다시 할 일로';
+        rb.onclick = () => toggleTask(t.id, false);
+        const pb = document.createElement('button');
+        pb.className = 'trash-purge';
+        pb.textContent = '휴지통으로';
+        pb.onclick = () => deleteTask(t.id);
+        actions.appendChild(rb);
+        actions.appendChild(pb);
+        li.appendChild(main);
+        li.appendChild(meta);
+        li.appendChild(actions);
+        ul.appendChild(li);
+    });
 }
 async function deleteTask(id) {                              // 지우지 않고 휴지통으로 보냄
     const t = tasksCache[id];
@@ -1133,9 +1284,8 @@ function renderTasks() {
     if (editDraft && !tasksCache[editDraft.id]) editDraft = null;   // 다른 기기에서 지워졌으면 수정 종료
     const items = Object.keys(tasksCache)
         .map(id => Object.assign({ id }, tasksCache[id]))
-        .filter(t => t && t.date && t.text);
+        .filter(t => t && t.date && t.text && !t.done);
     items.sort((a, b) =>
-        (a.done ? 1 : 0) - (b.done ? 1 : 0) ||
         String(a.date).localeCompare(String(b.date)) ||
         (a.period || 0) - (b.period || 0));
     ul.innerHTML = '';
@@ -1411,7 +1561,7 @@ updateTimerDisplay();
 
 // 화면으로 돌아왔을 때 한 번 더 최신 상태 확인 (보조용)
 document.addEventListener('visibilitychange', async () => {
-    if (!document.hidden) { await updateViews(); renderUpcoming(); }
+    if (!document.hidden) { await updateViews(); renderUpcoming(); purgeExpiredTrash(); }
 });
 // 자정이 지나면 D-day가 바뀌므로 1분마다 다시 계산
 setInterval(renderUpcoming, 60 * 1000);
